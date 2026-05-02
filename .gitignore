@@ -1,1 +1,10 @@
 .kilo/
+data-lake/features/
+data-lake/cleaned/
+__pycache__/
+*.pyc
+*.pyo
+*.log
+.env
+.DS_Store
+*.tmp
