@@ -1,44 +1,44 @@
-# 🚀 Predictive Sales Analysis in a Supermarket - TPE_INF438
+# Predictive Sales Analysis in a Supermarket - TPE_INF438
 
-## 📋 Project Overview
+## Project Overview
 
-This project develops an **end-to-end Big Data prediction system** for supermarket sales forecasting. It demonstrates Big Data principles (Volume, Velocity, Variety) through a layered architecture, utilizing Apache Spark for processing, a Feature Store for reusability, and Firebase for serving predictions.
+This project develops an end-to-end Big Data prediction system for supermarket sales forecasting. It demonstrates Big Data principles (Volume, Velocity, Variety) through a layered architecture, utilizing Apache Spark for processing, a Feature Store for reusability, and Firebase for serving predictions.
 
-**Problem Classification**: Time Series Forecasting  
-**Key Focus**: Advanced feature engineering, temporal splitting, industrial architecture
+Problem Classification: Time Series Forecasting
+Key Focus: Advanced feature engineering, temporal splitting, industrial architecture
 
-## 🏗️ Architecture
+## Architecture
 
 ```
-[SOURCES] → [INGESTION] → [DATA LAKE - RAW] → [PROCESSING - SPARK ETL] → [FEATURE STORE] → [ML PIPELINE] → [PREDICTIONS] → [SERVING - FIREBASE] → [VISUALISATION]
+[SOURCES] -> [INGESTION] -> [DATA LAKE - RAW] -> [PROCESSING - SPARK ETL] -> [FEATURE STORE] -> [ML PIPELINE] -> [PREDICTIONS] -> [SERVING - FIREBASE] -> [VISUALISATION]
 ```
 
 ### Layers Details
-- **Ingestion**: Batch (CSV/JSON) + API (weather)
-- **Data Lake**: `/data-lake/raw/`, `/data-lake/cleaned/`, `/data-lake/features/`
-- **Processing**: Spark ETL (Cleaning → Transformation → Feature Engineering)
-- **Feature Store**: Parquet files for ML-ready data
-- **ML**: Spark MLlib with temporal split, advanced FE (lags, rolling means)
-- **Serving**: Firebase Firestore with structured NoSQL
+- Ingestion: Batch (CSV/JSON) + API (weather)
+- Data Lake: /data-lake/raw/, /data-lake/cleaned/, /data-lake/features/
+- Processing: Spark ETL (Cleaning -> Transformation -> Feature Engineering)
+- Feature Store: Parquet files for ML-ready data
+- ML: Spark MLlib with temporal split, advanced FE (lags, rolling means)
+- Serving: Firebase Firestore with structured NoSQL
 
-## 🎯 Objectives
+## Objectives
 - Predict future sales using historical data (customers, seasons, promotions)
 - Implement proper time series forecasting with industrial vision
 - Maximize academic impact through architecture justification and documentation
 
-## 📊 Data Sources
-- **Primary**: Kaggle Supermarket Sales Dataset (https://www.kaggle.com/datasets/alexhuitron/supermarket-sales)
-- **Additional**:
+## Data Sources
+- Primary: Kaggle Supermarket Sales Dataset (https://www.kaggle.com/datasets/alexhuitron/supermarket-sales)
+- Additional:
   - Holidays JSON
   - Weather API (OpenWeatherMap)
 
-## 🛠️ Technologies
-- **Apache Spark 3.5.0**: Data processing & ML
-- **Python 3.13**: Core language
-- **Firebase**: Serving layer
-- **Jupyter Notebook**: EDA & experimentation
+## Technologies
+- Apache Spark 3.5.0: Data processing & ML
+- Python 3.13: Core language
+- Firebase: Serving layer
+- Jupyter Notebook: EDA & experimentation
 
-## 📁 Project Structure
+## Project Structure
 ```
 .
 ├── data-lake/
@@ -59,7 +59,7 @@ This project develops an **end-to-end Big Data prediction system** for supermark
 └── README.md        # This file
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.13+
@@ -73,11 +73,11 @@ pip install -r requirements.txt
 ```
 
 ### Setup
-1. Download Kaggle dataset and place in `data-lake/raw/`
-2. Configure Firebase in `config/firebase_config.py`
-3. Run ingestion: `python src/ingestion/ingest_data.py`
+1. Download Kaggle dataset and place in data-lake/raw/
+2. Configure Firebase in config/firebase_config.py
+3. Run ingestion: python src/ingestion/ingest_data.py
 
-## 📈 Methodology
+## Methodology
 
 ### Phase 0: Design
 - Architecture definition
@@ -106,28 +106,28 @@ pip install -r requirements.txt
 ### Phase 7: Documentation
 - Report & presentation
 
-## 📊 Evaluation Metrics
-- **Model**: RMSE, MAE, MAPE, R²
-- **Business**: Sales prediction accuracy
-- **System**: Processing time, scalability
+## Evaluation Metrics
+- Model: RMSE, MAE, MAPE, R²
+- Business: Sales prediction accuracy
+- System: Processing time, scalability
 
-## 🔥 Key Differentiators
-- **Advanced Feature Engineering**: Lags, rolling statistics, seasonality
-- **Temporal Correctness**: Proper time series split
-- **Industrial Architecture**: Feature Store, decoupled serving
-- **Comprehensive Documentation**: Justified choices, limitations, perspectives
+## Key Differentiators
+- Advanced Feature Engineering: Lags, rolling statistics, seasonality
+- Temporal Correctness: Proper time series split
+- Industrial Architecture: Feature Store, decoupled serving
+- Comprehensive Documentation: Justified choices, limitations, perspectives
 
-## 📚 Documentation
-- [Plan détaillé](.kilo/plans/1777711784236-crisp-star.md)
-- Notebooks in `/notebooks/`
-- Final report in `/docs/`
+## Documentation
+- [Detailed Plan](.kilo/plans/1777711784236-crisp-star.md)
+- Notebooks in /notebooks/
+- Final report in /docs/
 
-## 🤝 Contributing
+## Contributing
 This is an academic project. Follow the established architecture and document all changes.
 
-## 📄 License
+## License
 Academic project - no license.
 
 ---
 
-**Master TPE_INF438** - Analyse prédictive des ventes dans un supermarché
+Master TPE_INF438 - Predictive Sales Analysis in a Supermarket
