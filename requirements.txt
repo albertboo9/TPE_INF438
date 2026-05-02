@@ -1,0 +1,9 @@
+pyspark==3.5.0
+requests
+firebase-admin
+pandas
+matplotlib
+seaborn
+jupyter
+scikit-learn
+numpy
