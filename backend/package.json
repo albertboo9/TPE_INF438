@@ -11,7 +11,7 @@
     "lint": "eslint \"src/**/*.ts\" --fix"
   },
   "dependencies": {
-    "@databricks/sql": "^1.15.0",
+    "@databricks/sql": "^1.14.0",
     "@nestjs/cache-manager": "^2.0.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.0.0",
