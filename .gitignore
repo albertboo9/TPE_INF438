@@ -19,3 +19,4 @@ node_modules/
 
 # Build outputs
 *.tsbuildinfo
+stitch_retail_predictive_intelligence/

@@ -3,7 +3,7 @@ Analyse prédictive des ventes dans un supermarché
 
 ## Maquettes UI/UX
 
-Les maquettes de la plateforme RetailSense AI sont disponibles dans `docs/maquette/` :
+Les maquettes de la plateforme sont disponibles dans `docs/maquette/` :
 
 - **dashboard-executive-overview.png** - Vue principale avec métriques clés
 - **dashboard-predictions.png** - Prévisions et recommandations produits

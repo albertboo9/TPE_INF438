@@ -1,4 +1,4 @@
-# Maquettes UI/UX RetailSense AI
+# Maquettes UI/UX 
 
 ## Desktop
 
