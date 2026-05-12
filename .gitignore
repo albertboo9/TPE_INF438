@@ -6,7 +6,16 @@ __pycache__/
 *.pyo
 *.log
 .env
+.env.local
 .DS_Store
 *.tmp
+dist/
+node_modules/
+*.local
 
-stitch_retail_predictive_intelligence/
+# IDE
+.vscode/
+.idea/
+
+# Build outputs
+*.tsbuildinfo

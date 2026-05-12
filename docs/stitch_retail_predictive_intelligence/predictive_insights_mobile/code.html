@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e6e0e9",
+                    "inverse-surface": "#322f35",
+                    "on-surface-variant": "#494551",
+                    "on-secondary-fixed": "#1f1635",
+                    "on-surface": "#1d1b20",
+                    "on-background": "#1d1b20",
+                    "surface": "#fdf7ff",
+                    "on-tertiary-fixed-variant": "#594400",
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#ded8e0",
+                    "outline-variant": "#cbc4d2",
+                    "surface-container": "#f2ecf4",
+                    "on-secondary-fixed-variant": "#4b4263",
+                    "on-primary-container": "#e0d2ff",
+                    "inverse-on-surface": "#f5eff7",
+                    "surface-bright": "#fdf7ff",
+                    "outline": "#7a7582",
+                    "tertiary-container": "#c9a74d",
+                    "primary-fixed-dim": "#cfbcff",
+                    "tertiary-fixed-dim": "#e7c365",
+                    "background": "#fdf7ff",
+                    "surface-tint": "#6750a4",
+                    "on-error": "#ffffff",
+                    "primary-container": "#6750a4",
+                    "on-tertiary-container": "#503d00",
+                    "secondary-fixed": "#e9ddff",
+                    "on-tertiary-fixed": "#241a00",
+                    "secondary-container": "#e1d4fd",
+                    "secondary": "#63597c",
+                    "on-primary-fixed": "#22005d",
+                    "tertiary-fixed": "#ffdf93",
+                    "primary-fixed": "#e9ddff",
+                    "on-primary": "#ffffff",
+                    "inverse-primary": "#cfbcff",
+                    "tertiary": "#765b00",
+                    "surface-container-low": "#f8f2fa",
+                    "on-secondary-container": "#645a7d",
+                    "error-container": "#ffdad6",
+                    "primary": "#4f378a",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed-variant": "#4f378a",
+                    "secondary-fixed-dim": "#cdc0e9",
+                    "error": "#ba1a1a",
+                    "surface-container-high": "#ece6ee",
+                    "surface-container-highest": "#e6e0e9",
+                    "on-tertiary": "#ffffff",
+                    "emerald-ai": "#10b981",
+                    "electric-indigo": "#6366f1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "24px",
+                    "bento-gap": "20px",
+                    "xs": "8px",
+                    "sm": "16px",
+                    "base": "4px",
+                    "xl": "64px",
+                    "lg": "40px"
+            },
+            "fontFamily": {
+                    "mono-data": ["JetBrains Mono"],
+                    "h2": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "h1": ["Inter"],
+                    "display": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "mono-data": ["13px", {"lineHeight": "1", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                    "h2": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-sm min-h-screen flex flex-col">
+<!-- Top Navigation -->
+<header class="fixed top-0 z-50 w-full bg-surface/70 backdrop-blur-md border-b border-outline/10 flex justify-between items-center px-lg py-sm shadow-sm h-16">
+<div class="flex items-center gap-sm">
+<span class="font-display text-h2 font-bold text-primary">RetailSense AI</span>
+</div>
+<div class="hidden md:flex items-center gap-lg">
+<a class="font-display text-body-lg font-semibold text-primary border-b-2 border-primary pb-2" href="#">Executive</a>
+<a class="font-display text-body-lg font-semibold text-on-surface-variant hover:text-primary transition-colors" href="#">Predictions</a>
+<a class="font-display text-body-lg font-semibold text-on-surface-variant hover:text-primary transition-colors" href="#">Intelligence</a>
+</div>
+<div class="flex items-center gap-sm">
+<button class="material-symbols-outlined text-on-surface-variant">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant">settings</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline/20">
+<img alt="Executive Profile" data-alt="A professional headshot of a senior retail executive in a high-key studio setting. The lighting is soft and flattering, creating a modern and corporate aesthetic. The background is a clean, minimalist off-white, maintaining the light-mode design of the interface. The executive has a confident and approachable expression, wearing a tailored navy blazer." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAn4qTo_c9y8jz2o851BdDBWJXOwn7zcqe6_vJhW_2aE4hSHkwhG5tYzZ_9wv1TXhkV5YjpTnYH5l-gPpKBFovIhmSmy0i5QfAgYvYjhRJGabKE5sSc8Zmk9y6mcbS2LPnc-2d15erKTO_CWuB8Ae-pJwGfz-WcAVdQnio73SE3BDxA4eM63_sRZ1f2WJXpXTBcykHX868iA6o1OOs0DkjGp5nmLLqLeguIoghiqXm-9_xfni3iSWogWT4_iFbjemZdk1r7MfGg5DDj"/>
+</div>
+</div>
+</header>
+<main class="mt-20 px-sm pb-xl max-w-md mx-auto w-full space-y-md">
+<!-- Section Header -->
+<div class="py-xs">
+<h1 class="font-h1 text-h1 text-on-surface">Predictive Insights</h1>
+<p class="text-on-surface-variant">Real-time forecast for Q3 Performance</p>
+</div>
+<!-- Projected Revenue - Stacked Cards -->
+<div class="relative pt-xs">
+<!-- Background Stack Effect -->
+<div class="absolute inset-x-4 -top-2 h-12 bg-surface-container-high rounded-xl opacity-40"></div>
+<div class="absolute inset-x-2 -top-1 h-12 bg-surface-container-highest rounded-xl opacity-60"></div>
+<div class="glass-card rounded-xl p-md relative z-10">
+<div class="flex justify-between items-start mb-sm">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">PROJECTED REVENUE</span>
+<h2 class="font-h2 text-h1 mt-base text-on-surface">$4.2M</h2>
+</div>
+<div class="bg-emerald-ai/10 text-emerald-ai px-xs py-[2px] rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+<span class="font-mono-data text-mono-data">+12.4%</span>
+</div>
+</div>
+<div class="h-24 w-full bg-surface-container-lowest/50 rounded-lg relative overflow-hidden mb-md border border-outline/5">
+<!-- Subtle Area Chart Placeholder -->
+<svg class="absolute bottom-0 w-full h-full" viewbox="0 0 400 100">
+<path d="M0,80 Q50,70 100,75 T200,40 T300,60 T400,20 L400,100 L0,100 Z" fill="rgba(16, 185, 129, 0.05)"></path>
+<path d="M0,80 Q50,70 100,75 T200,40 T300,60 T400,20" fill="none" stroke="#10b981" stroke-width="2.5"></path>
+</svg>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant font-body-sm">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<span>End of Q3</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">analytics</span>
+<span>Model v4.2</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Confidence Score Gauge -->
+<div class="glass-card rounded-xl p-md">
+<div class="flex justify-between items-center mb-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">CONFIDENCE SCORE</span>
+<div class="flex items-center gap-xs bg-primary/5 text-primary px-sm py-1 rounded-full border border-primary/10">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-[11px] font-bold">Verified by AI</span>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<div class="relative w-24 h-24 flex items-center justify-center">
+<!-- Gauge SVG -->
+<svg class="w-full h-full -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-variant" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="100, 100" stroke-linecap="round" stroke-width="3"></path>
+<path class="text-emerald-ai" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="92, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<div class="absolute flex flex-col items-center">
+<span class="font-mono-data text-h2 text-on-surface">R2</span>
+<span class="text-[10px] font-bold text-on-surface-variant">0.92</span>
+</div>
+</div>
+<div class="flex-1 space-y-xs">
+<p class="font-body-sm text-on-surface leading-tight">High statistical correlation detected in consumer velocity patterns.</p>
+<div class="h-1 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-emerald-ai w-[92%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Smart Promotion Module -->
+<div class="space-y-sm">
+<div class="flex justify-between items-end">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">SMART PROMOTIONS</span>
+<button class="text-emerald-ai font-bold text-xs flex items-center gap-1">
+<span>OPTIMIZE ALL</span>
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+</button>
+</div>
+<!-- Vertical List of Recommendations -->
+<div class="space-y-sm">
+<!-- Item 1 -->
+<div class="glass-card rounded-xl p-xs flex items-center gap-md">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0">
+<img alt="Avocados" data-alt="A collection of ripe, textured Hass avocados sliced in half, showcasing the vibrant green and creamy interior against a clean, minimalist wooden background. The lighting is soft and natural, emphasizing the organic quality of the product in a bright, modern light-mode setting. The overall mood is fresh and premium." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWIt1IIXuPbY9swZDTtv7EgB-0_Ca7OEzTvZy9URAgJiYz7n8OSqxjDn-2N_ppL6JofD5zMb_tYvg91rhBT1yf_vtWlB_8EICxT6SBMYGXsvHokl-HiuLA52uR5avh97AHEaKIi8OjJPRvuzIviSUD6RMzFsTg7XlG3g61AWhaVyItHt-WHrMRlSeC1oWOqJofGgndGjmJOpjaPMNM9er9PkponCnmPqO-4NpANBbqkHNlrEGtiLqIMMmNjJA_Abicgx6b36b9ZIz5"/>
+</div>
+<div class="flex-1 pr-sm">
+<div class="flex justify-between items-start">
+<h3 class="font-h2 text-body-lg text-on-surface">Avocados</h3>
+<span class="font-mono-data text-emerald-ai text-[12px]">+18%</span>
+</div>
+<p class="text-[12px] text-on-surface-variant mb-xs">Bundle with breakfast items</p>
+<div class="flex gap-xs">
+<span class="bg-surface-container text-[10px] px-2 py-0.5 rounded text-on-surface-variant">Inventory: High</span>
+<span class="bg-surface-container text-[10px] px-2 py-0.5 rounded text-on-surface-variant">Margin: 32%</span>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="glass-card rounded-xl p-xs flex items-center gap-md">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0">
+<img alt="Almond Milk" data-alt="A minimalist, high-end bottle of fresh almond milk sitting on a marble surface. The lighting is crisp and cool, creating soft shadows that emphasize the clean, white liquid and modern glass packaging. The setting is bright and spacious, aligned with a premium retail aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcmdZWP551T1K6CN0CFpBKWQsSWsCO2Amd6NKhCp8xZQBP64Ou8LwFzIrYpppJIc-3I5WS6hTBSLBOGNGpMRFd-sdV2-Ej74_iZSuG9IOs_-wdeenn12O8vDsMW1Yq72bupa4Gc2L1OxbPohxNcTRhwn1vpdDt2BuLHjV5M8a9TclUAQhR63k1yqEicrtgsKPF6sHdrfV65P4CBaqQK0d6KMorKXmVKrTiz8oK5fIdvqxreunSuiLLB5YVfEG824iRoyDovXefZ4M4"/>
+</div>
+<div class="flex-1 pr-sm">
+<div class="flex justify-between items-start">
+<h3 class="font-h2 text-body-lg text-on-surface">Almond Milk</h3>
+<span class="font-mono-data text-emerald-ai text-[12px]">+12%</span>
+</div>
+<p class="text-[12px] text-on-surface-variant mb-xs">Flash sale for subscription users</p>
+<div class="flex gap-xs">
+<span class="bg-surface-container text-[10px] px-2 py-0.5 rounded text-on-surface-variant">Inventory: Normal</span>
+<span class="bg-surface-container text-[10px] px-2 py-0.5 rounded text-on-surface-variant">Margin: 24%</span>
+</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="glass-card rounded-xl p-xs flex items-center gap-md">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0">
+<img alt="Sourdough" data-alt="A rustic, artisan loaf of sourdough bread with a perfectly scored, golden-brown crust. The bread is placed on a simple linen cloth in a bright, airy kitchen setting. The natural light highlights the intricate texture of the crust and the artisanal quality of the product, evoking a sense of handcrafted excellence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_gPBBD9WDEVOh3XPUgokhU_AhdPcc99xd6Tddn8AJXUKhH7Ev1Hu5qC-IKDn---eidUn0T5mduI00eDR_2jZrIkzv4JQCRDlVRRVYqurPVw4C_1CpS1K8FaNBgN8-PvLRd66hgMcOv1rhZlq4aiP0R7SnF5Nt1MDS4rw8Gxwy0IZSomg9ncAt_ujmbeev426aXNMBFxJ3iwiA7UZf7f6LffMuCMKvc-n5Jxp9BRU55OHM50yqWZGAlxkVmFLa4nSydDl7V8ddsPyl"/>
+</div>
+<div class="flex-1 pr-sm">
+<div class="flex justify-between items-start">
+<h3 class="font-h2 text-body-lg text-on-surface">Sourdough</h3>
+<span class="font-mono-data text-emerald-ai text-[12px]">+22%</span>
+</div>
+<p class="text-[12px] text-on-surface-variant mb-xs">Morning 'Fresh Batch' alert</p>
+<div class="flex gap-xs">
+<span class="bg-surface-container text-[10px] px-2 py-0.5 rounded text-on-surface-variant">Inventory: Low</span>
+<span class="bg-surface-container text-[10px] px-2 py-0.5 rounded text-on-surface-variant">Margin: 45%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Predictive CTA -->
+<button class="w-full bg-electric-indigo text-white font-display text-body-lg font-bold py-md rounded-xl shadow-lg flex items-center justify-center gap-sm active:opacity-80 active:scale-95 transition-all">
+<span class="material-symbols-outlined">auto_graph</span>
+<span>Generate Forecast</span>
+</button>
+</main>
+<!-- Bottom Navigation Bar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 z-50 w-full bg-surface-container-low/80 backdrop-blur-xl flex justify-around items-center px-sm py-xs border-t border-outline/5 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-[10px] font-bold">Overview</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="text-[10px] font-medium">Forecasting</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-[10px] font-medium">Inventory</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">campaign</span>
+<span class="text-[10px] font-medium">Marketing</span>
+</div>
+</nav>
+</body></html>

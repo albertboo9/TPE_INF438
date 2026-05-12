@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffdf93",
+                        "surface-container-high": "#ece6ee",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "primary-fixed": "#e9ddff",
+                        "on-secondary-fixed-variant": "#4b4263",
+                        "on-secondary": "#ffffff",
+                        "outline": "#7a7582",
+                        "surface-container-low": "#f8f2fa",
+                        "tertiary-container": "#c9a74d",
+                        "primary-container": "#6750a4",
+                        "on-primary-fixed-variant": "#4f378a",
+                        "on-tertiary-container": "#503d00",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#6750a4",
+                        "background": "#fdf7ff",
+                        "tertiary-fixed-dim": "#e7c365",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#ded8e0",
+                        "on-primary-container": "#e0d2ff",
+                        "primary-fixed-dim": "#cfbcff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#1f1635",
+                        "inverse-on-surface": "#f5eff7",
+                        "surface-container": "#f2ecf4",
+                        "primary": "#4f378a",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#e9ddff",
+                        "on-tertiary-fixed": "#241a00",
+                        "surface-container-highest": "#e6e0e9",
+                        "outline-variant": "#cbc4d2",
+                        "on-background": "#1d1b20",
+                        "on-secondary-container": "#645a7d",
+                        "tertiary": "#765b00",
+                        "inverse-surface": "#322f35",
+                        "on-primary-fixed": "#22005d",
+                        "surface": "#fdf7ff",
+                        "on-surface-variant": "#494551",
+                        "inverse-primary": "#cfbcff",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1d1b20",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#fdf7ff",
+                        "secondary-container": "#e1d4fd",
+                        "surface-variant": "#e6e0e9",
+                        "secondary": "#63597c",
+                        "secondary-fixed-dim": "#cdc0e9",
+                        "emerald-ai": "#10b981",
+                        "electric-indigo": "#6366f1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "8px",
+                        "bento-gap": "20px",
+                        "md": "24px",
+                        "xl": "64px",
+                        "lg": "40px",
+                        "base": "4px",
+                        "sm": "16px"
+                    },
+                    "fontFamily": {
+                        "display": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h2": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "mono-data": ["JetBrains Mono"],
+                        "h1": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                        "h2": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "mono-data": ["13px", {"lineHeight": "1", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                        "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-lg min-h-screen flex flex-col">
+<nav class="bg-surface/70 backdrop-blur-md dark:bg-surface-dim/70 docked full-width top-0 z-50 border-b border-outline/10 shadow-sm flex justify-between items-center px-lg py-sm w-full">
+<div class="flex items-center gap-xl">
+<span class="font-display text-h2 font-bold text-primary dark:text-primary-fixed">RetailSense AI</span>
+<div class="hidden md:flex gap-md">
+<a class="font-display text-body-lg font-semibold text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Executive</a>
+<a class="font-display text-body-lg font-semibold text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Predictions</a>
+<a class="font-display text-body-lg font-semibold text-primary dark:text-primary-fixed border-b-2 border-primary dark:border-primary-fixed pb-2" href="#">Intelligence</a>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="bg-[#F8FAFC] border-none rounded-full pl-lg pr-md py-xs text-body-sm w-64 focus:ring-2 focus:ring-primary/20" placeholder="Search product intelligence..." type="text"/>
+</div>
+<button class="bg-emerald-ai text-white px-md py-xs rounded-full font-semibold text-body-sm hover:opacity-90 transition-all flex items-center gap-xs">
+<span class="material-symbols-outlined text-[20px]">sensors</span>
+                Live Data
+            </button>
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">settings</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden border border-outline/20">
+<img alt="Executive Profile" data-alt="A professional headshot of a retail executive in a clean, high-key studio setting. The subject has a confident expression, wearing a tailored navy blazer. The lighting is soft and directional, creating a polished, modern aesthetic that fits a high-end corporate environment. The background is a soft, blurred office interior with neutral tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6HBmAOwFIcFiel5BZcJet9uEMSStchuCSwA1armOeDo4GzSTEdYYdRmkBn_8N8-C_GFwm2euewEDhlsi8K0bxeBRuDuVk7BAPoqHrNNNw9DHysl3WHDQ6roF7jUGKvONRoEQKv-p18V7QOwmyFpZ_bIluqnq1cuIHfpu1prSvaEE32HRWjVGjESMq9hbylhoMS4rSqSnNYgLrwneQ5fnbSSKoO2DIEcgaE46YM37K2S8HBTx1etdRqDMAZE2EucRoDBIJngyqPpTz"/>
+</div>
+</div>
+</div>
+</nav>
+<div class="flex flex-1 pt-0">
+<aside class="hidden md:flex bg-surface-container-low/80 backdrop-blur-xl dark:bg-surface-container-high/80 docked left-0 h-[calc(100vh-64px)] w-64 border-r border-outline/10 flex-col p-md space-y-xs">
+<div class="mb-lg px-xs">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined">inventory</span>
+</div>
+<div>
+<p class="font-display text-body-lg font-bold text-primary">Inventory Engine</p>
+<p class="text-xs text-outline font-mono-data uppercase tracking-wider">V3.4 Active</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-base">
+<div class="flex items-center gap-sm px-sm py-xs text-on-surface-variant hover:bg-surface-variant/50 rounded-lg cursor-pointer transition-all">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-sm text-body-sm">Overview</span>
+</div>
+<div class="flex items-center gap-sm px-sm py-xs text-on-surface-variant hover:bg-surface-variant/50 rounded-lg cursor-pointer transition-all">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="font-body-sm text-body-sm">Forecasting</span>
+</div>
+<div class="flex items-center gap-sm px-sm py-xs bg-secondary-container text-on-secondary-container dark:bg-primary-container dark:text-on-primary-container rounded-lg font-semibold cursor-pointer">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-body-sm text-body-sm">Inventory</span>
+</div>
+<div class="flex items-center gap-sm px-sm py-xs text-on-surface-variant hover:bg-surface-variant/50 rounded-lg cursor-pointer transition-all">
+<span class="material-symbols-outlined">campaign</span>
+<span class="font-body-sm text-body-sm">Marketing</span>
+</div>
+</nav>
+<button class="bg-electric-indigo text-white rounded-xl py-sm font-semibold flex items-center justify-center gap-sm shadow-lg shadow-electric-indigo/20 hover:scale-[0.98] transition-all">
+<span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+                Generate Forecast
+            </button>
+<div class="pt-md border-t border-outline/10 flex flex-col gap-base">
+<div class="flex items-center gap-sm px-sm py-xs text-on-surface-variant hover:bg-surface-variant/50 rounded-lg cursor-pointer">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-sm text-body-sm">Help Center</span>
+</div>
+<div class="flex items-center gap-sm px-sm py-xs text-on-surface-variant hover:bg-surface-variant/50 rounded-lg cursor-pointer">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-sm text-body-sm">Log Out</span>
+</div>
+</div>
+</aside>
+<main class="flex-1 p-lg overflow-y-auto">
+<header class="mb-lg">
+<h1 class="font-display text-h1 text-primary">Product Intelligence</h1>
+<p class="text-on-surface-variant">Unified performance metrics and AI-driven shelf-life forecasting.</p>
+</header>
+<div class="grid grid-cols-12 gap-bento-gap">
+<!-- Main Table Section -->
+<div class="col-span-12 glass-card rounded-xl overflow-hidden">
+<div class="px-md py-sm border-b border-outline/10 flex justify-between items-center bg-surface-container-lowest/50">
+<div class="flex items-center gap-md">
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-widest">SKU Catalog</span>
+<div class="flex gap-xs">
+<span class="bg-primary/5 text-primary px-sm py-1 rounded-full text-xs font-semibold">Active: 1,204</span>
+<span class="bg-error/5 text-error px-sm py-1 rounded-full text-xs font-semibold">Critical: 12</span>
+</div>
+</div>
+<div class="flex gap-sm">
+<button class="text-xs font-semibold px-sm py-1.5 rounded-lg border border-outline/20 hover:bg-surface-variant/30 transition-all flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">filter_list</span> Filter
+                            </button>
+<button class="text-xs font-semibold px-sm py-1.5 rounded-lg border border-outline/20 hover:bg-surface-variant/30 transition-all flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">download</span> Export
+                            </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container/30 text-outline text-xs uppercase tracking-wider font-semibold">
+<th class="px-md py-sm">SKU</th>
+<th class="px-md py-sm">Product Name</th>
+<th class="px-md py-sm">Category</th>
+<th class="px-md py-sm text-right">Stock Level</th>
+<th class="px-md py-sm">Sales Velocity</th>
+<th class="px-md py-sm">AI Forecast</th>
+<th class="px-md py-sm text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline/10">
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-md py-md font-mono-data text-primary">#FD-8821</td>
+<td class="px-md py-md">
+<div class="font-semibold text-on-surface">Organic Avocados (4pk)</div>
+<div class="text-[10px] text-outline uppercase">Fresh Produce</div>
+</td>
+<td class="px-md py-md"><span class="bg-surface-container-high px-xs py-0.5 rounded text-[11px] font-medium">Grocery</span></td>
+<td class="px-md py-md text-right font-mono-data font-bold">422 <span class="text-[10px] font-normal text-outline">/ 800</span></td>
+<td class="px-md py-md">
+<div class="w-24 h-6 relative">
+<div class="absolute inset-0 bg-emerald-ai/10 rounded-full"></div>
+<div class="absolute inset-y-0 left-0 bg-emerald-ai w-3/4 rounded-full"></div>
+<span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-on-surface">High</span>
+</div>
+</td>
+<td class="px-md py-md text-emerald-ai font-semibold flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">trending_up</span>
+                                        +12% (7d)
+                                    </td>
+<td class="px-md py-md text-right">
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary transition-all">more_vert</span>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-md py-md font-mono-data text-primary">#BV-0042</td>
+<td class="px-md py-md">
+<div class="font-semibold text-on-surface">Sparkling Spring Water 500ml</div>
+<div class="text-[10px] text-outline uppercase">Beverages</div>
+</td>
+<td class="px-md py-md"><span class="bg-surface-container-high px-xs py-0.5 rounded text-[11px] font-medium">Drinks</span></td>
+<td class="px-md py-md text-right font-mono-data font-bold text-error">84 <span class="text-[10px] font-normal text-outline">/ 1500</span></td>
+<td class="px-md py-md">
+<div class="w-24 h-6 relative">
+<div class="absolute inset-0 bg-emerald-ai/10 rounded-full"></div>
+<div class="absolute inset-y-0 left-0 bg-emerald-ai w-[95%] rounded-full"></div>
+<span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-on-surface">Peak</span>
+</div>
+</td>
+<td class="px-md py-md text-electric-indigo font-semibold flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                                        Restock Req.
+                                    </td>
+<td class="px-md py-md text-right">
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary transition-all">more_vert</span>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-md py-md font-mono-data text-primary">#SN-9122</td>
+<td class="px-md py-md">
+<div class="font-semibold text-on-surface">Salted Caramel Popcorn</div>
+<div class="text-[10px] text-outline uppercase">Snack Foods</div>
+</td>
+<td class="px-md py-md"><span class="bg-surface-container-high px-xs py-0.5 rounded text-[11px] font-medium">Ambient</span></td>
+<td class="px-md py-md text-right font-mono-data font-bold">1,240 <span class="text-[10px] font-normal text-outline">/ 2000</span></td>
+<td class="px-md py-md">
+<div class="w-24 h-6 relative">
+<div class="absolute inset-0 bg-secondary/10 rounded-full"></div>
+<div class="absolute inset-y-0 left-0 bg-secondary w-1/3 rounded-full"></div>
+<span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-on-surface">Low</span>
+</div>
+</td>
+<td class="px-md py-md text-outline font-semibold flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">trending_flat</span>
+                                        Stable
+                                    </td>
+<td class="px-md py-md text-right">
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary transition-all">more_vert</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-md py-sm bg-surface-container-low/30 border-t border-outline/10 flex items-center justify-between">
+<span class="text-xs text-outline">Showing <span class="font-semibold text-on-surface">1-25</span> of 1,204 products</span>
+<div class="flex gap-xs">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-outline/20 hover:bg-surface-variant transition-all"><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-on-primary font-semibold text-xs">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-variant transition-all font-semibold text-xs text-outline">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-variant transition-all font-semibold text-xs text-outline">3</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-outline/20 hover:bg-surface-variant transition-all"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
+</div>
+</div>
+</div>
+<!-- Bottom Heatmap Section -->
+<div class="col-span-12 glass-card rounded-xl p-md">
+<div class="flex justify-between items-end mb-md">
+<div>
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-widest block mb-xs">Sales Density Heatmap</span>
+<h2 class="font-display text-h2 text-on-surface">Footfall Traffic Analysis</h2>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-sm">
+<span class="text-[10px] text-outline uppercase font-semibold">Intensity Scale</span>
+<div class="flex gap-0.5">
+<div class="w-4 h-4 rounded-sm bg-electric-indigo/10"></div>
+<div class="w-4 h-4 rounded-sm bg-electric-indigo/30"></div>
+<div class="w-4 h-4 rounded-sm bg-electric-indigo/60"></div>
+<div class="w-4 h-4 rounded-sm bg-emerald-ai"></div>
+</div>
+</div>
+<select class="bg-[#F8FAFC] border border-outline/10 rounded-lg px-sm py-1 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary">
+<option>Last 7 Days</option>
+<option>Last 30 Days</option>
+</select>
+</div>
+</div>
+<div class="grid grid-cols-[auto_1fr] gap-sm">
+<!-- Y-Axis (Days) -->
+<div class="grid grid-rows-7 gap-1 pr-sm text-[10px] font-bold text-outline uppercase py-sm">
+<div class="flex items-center justify-end">Mon</div>
+<div class="flex items-center justify-end">Tue</div>
+<div class="flex items-center justify-end">Wed</div>
+<div class="flex items-center justify-end">Thu</div>
+<div class="flex items-center justify-end">Fri</div>
+<div class="flex items-center justify-end">Sat</div>
+<div class="flex items-center justify-end">Sun</div>
+</div>
+<!-- Heatmap Grid -->
+<div class="flex flex-col gap-1">
+<!-- X-Axis (Time) -->
+<div class="grid grid-cols-12 gap-1 mb-2 text-[10px] font-bold text-outline uppercase text-center">
+<div>08a</div><div>10a</div><div>12p</div><div>02p</div><div>04p</div><div>06p</div><div>08p</div><div>10p</div><div>12a</div><div>02a</div><div>04a</div><div>06a</div>
+</div>
+<div class="grid grid-rows-7 gap-1 h-48">
+<!-- Mon -->
+<div class="grid grid-cols-12 gap-1">
+<div class="bg-electric-indigo/10 rounded-sm"></div><div class="bg-electric-indigo/30 rounded-sm"></div><div class="bg-electric-indigo/60 rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-electric-indigo/60 rounded-sm"></div><div class="bg-electric-indigo/30 rounded-sm"></div><div class="bg-electric-indigo/10 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div>
+</div>
+<!-- Tue -->
+<div class="grid grid-cols-12 gap-1">
+<div class="bg-electric-indigo/10 rounded-sm"></div><div class="bg-electric-indigo/20 rounded-sm"></div><div class="bg-electric-indigo/40 rounded-sm"></div><div class="bg-electric-indigo/60 rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-electric-indigo/60 rounded-sm"></div><div class="bg-electric-indigo/30 rounded-sm"></div><div class="bg-electric-indigo/10 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div>
+</div>
+<!-- Wed -->
+<div class="grid grid-cols-12 gap-1">
+<div class="bg-electric-indigo/10 rounded-sm"></div><div class="bg-electric-indigo/30 rounded-sm"></div><div class="bg-electric-indigo/60 rounded-sm"></div><div class="bg-electric-indigo/80 rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-electric-indigo/60 rounded-sm"></div><div class="bg-electric-indigo/40 rounded-sm"></div><div class="bg-electric-indigo/10 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div>
+</div>
+<!-- Thu -->
+<div class="grid grid-cols-12 gap-1">
+<div class="bg-electric-indigo/20 rounded-sm"></div><div class="bg-electric-indigo/40 rounded-sm"></div><div class="bg-electric-indigo/80 rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-electric-indigo/80 rounded-sm"></div><div class="bg-electric-indigo/40 rounded-sm"></div><div class="bg-electric-indigo/20 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div>
+</div>
+<!-- Fri -->
+<div class="grid grid-cols-12 gap-1">
+<div class="bg-electric-indigo/30 rounded-sm"></div><div class="bg-electric-indigo/60 rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-electric-indigo/80 rounded-sm"></div><div class="bg-electric-indigo/40 rounded-sm"></div><div class="bg-electric-indigo/10 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div>
+</div>
+<!-- Sat -->
+<div class="grid grid-cols-12 gap-1">
+<div class="bg-electric-indigo/40 rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-electric-indigo/60 rounded-sm"></div><div class="bg-electric-indigo/20 rounded-sm"></div>
+</div>
+<!-- Sun -->
+<div class="grid grid-cols-12 gap-1">
+<div class="bg-electric-indigo/20 rounded-sm"></div><div class="bg-electric-indigo/40 rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-emerald-ai rounded-sm"></div><div class="bg-electric-indigo/80 rounded-sm"></div><div class="bg-electric-indigo/60 rounded-sm"></div><div class="bg-electric-indigo/40 rounded-sm"></div><div class="bg-electric-indigo/20 rounded-sm"></div><div class="bg-electric-indigo/10 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div><div class="bg-electric-indigo/5 rounded-sm"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

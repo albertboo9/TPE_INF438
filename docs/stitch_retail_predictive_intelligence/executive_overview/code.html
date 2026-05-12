@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffdf93",
+                        "surface-container-high": "#ece6ee",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "primary-fixed": "#e9ddff",
+                        "on-secondary-fixed-variant": "#4b4263",
+                        "on-secondary": "#ffffff",
+                        "outline": "#7a7582",
+                        "surface-container-low": "#f8f2fa",
+                        "tertiary-container": "#c9a74d",
+                        "primary-container": "#6750a4",
+                        "on-primary-fixed-variant": "#4f378a",
+                        "on-tertiary-container": "#503d00",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#6750a4",
+                        "background": "#fdf7ff",
+                        "tertiary-fixed-dim": "#e7c365",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#ded8e0",
+                        "on-primary-container": "#e0d2ff",
+                        "primary-fixed-dim": "#cfbcff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#1f1635",
+                        "inverse-on-surface": "#f5eff7",
+                        "surface-container": "#f2ecf4",
+                        "primary": "#4f378a",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#e9ddff",
+                        "on-tertiary-fixed": "#241a00",
+                        "surface-container-highest": "#e6e0e9",
+                        "outline-variant": "#cbc4d2",
+                        "on-background": "#1d1b20",
+                        "on-secondary-container": "#645a7d",
+                        "tertiary": "#765b00",
+                        "inverse-surface": "#322f35",
+                        "on-primary-fixed": "#22005d",
+                        "surface": "#fdf7ff",
+                        "on-surface-variant": "#494551",
+                        "inverse-primary": "#cfbcff",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1d1b20",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#fdf7ff",
+                        "secondary-container": "#e1d4fd",
+                        "surface-variant": "#e6e0e9",
+                        "secondary": "#63597c",
+                        "secondary-fixed-dim": "#cdc0e9",
+                        "emerald-ai": "#10b981",
+                        "electric-indigo": "#6366f1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "8px",
+                        "bento-gap": "20px",
+                        "md": "24px",
+                        "xl": "64px",
+                        "lg": "40px",
+                        "base": "4px",
+                        "sm": "16px"
+                    },
+                    "fontFamily": {
+                        "display": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h2": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "mono-data": ["JetBrains Mono"],
+                        "h1": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                        "h2": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "mono-data": ["13px", {"lineHeight": "1", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                        "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background font-display text-on-background selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<header class="fixed top-0 z-50 w-full bg-surface/70 backdrop-blur-md border-b border-outline/10 shadow-sm flex justify-between items-center px-lg py-sm">
+<div class="flex items-center gap-xl">
+<h1 class="font-display text-h2 font-bold text-primary">RetailSense AI</h1>
+<nav class="hidden md:flex items-center gap-md">
+<a class="font-display text-body-lg font-semibold text-primary border-b-2 border-primary pb-2 transition-all" href="#">Executive</a>
+<a class="font-display text-body-lg font-semibold text-on-surface-variant hover:text-primary transition-colors" href="#">Predictions</a>
+<a class="font-display text-body-lg font-semibold text-on-surface-variant hover:text-primary transition-colors" href="#">Intelligence</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-xs bg-emerald-ai/10 px-sm py-xs rounded-full">
+<span class="w-2 h-2 rounded-full bg-emerald-ai animate-pulse"></span>
+<span class="font-mono-data text-emerald-ai uppercase tracking-wider text-[10px] font-bold">Live Data</span>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-xs text-on-surface-variant hover:bg-surface-variant/50 rounded-full transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-xs text-on-surface-variant hover:bg-surface-variant/50 rounded-full transition-all">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline/20">
+<img alt="Executive Profile" data-alt="A professional executive headshot of a corporate leader with a confident expression. The lighting is soft and studio-quality, highlighting facial features clearly. The person is dressed in modern professional attire, set against a clean, blurred office background that maintains the light-mode minimalist aesthetic. The overall mood is authoritative yet approachable." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlflG33mBr8ZvyZBpqPq_2ML_dh7fYowlSeI2H-L1PJ61XPynQnNf7AuW2qaGhzzRZkfpj6RkfA2USCHTAT-CalFjTwvq2F6dLOIdsXmfZS-aI5nqqUXwjw2E-3XoWeAZ2_4vTHwf300UpgKw_r81nERrkOLDxXLzdt2lSThUQ4R62qSfnsaIR5Vbj74zEaLQaIlApjMBirOkO6VUgA6VecuniQmSnxThCTe1wJyDGmTYbNJkAHoBpoUUCT1ckHYHPmvLa14CJKg7-"/>
+</div>
+</div>
+</div>
+</header>
+<main class="pt-32 pb-xl px-lg max-w-[1440px] mx-auto">
+<!-- Header Section -->
+<div class="mb-lg flex justify-between items-end">
+<div>
+<p class="font-label-caps text-on-surface-variant uppercase mb-base">Performance Intelligence</p>
+<h2 class="font-h1 text-on-background">Executive Overview</h2>
+</div>
+<button class="flex items-center gap-xs bg-electric-indigo text-white px-md py-sm rounded-lg font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]" data-weight="fill">auto_awesome</span>
+<span>Generate Forecast</span>
+</button>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-bento-gap">
+<!-- Top Row: 4 Bento Cards -->
+<!-- Card 1: Revenue -->
+<div class="col-span-12 md:col-span-3 glass-card p-md rounded-xl">
+<div class="flex justify-between items-start mb-sm">
+<span class="font-label-caps text-on-surface-variant uppercase">Revenue</span>
+<span class="font-mono-data text-emerald-ai text-[12px]">+12.4%</span>
+</div>
+<h3 class="font-h2 text-on-background mb-xs">$4.28M</h3>
+<div class="h-12 w-full mt-sm flex items-end gap-[2px]">
+<div class="flex-1 bg-emerald-ai/10 rounded-t-sm" style="height: 40%;"></div>
+<div class="flex-1 bg-emerald-ai/10 rounded-t-sm" style="height: 35%;"></div>
+<div class="flex-1 bg-emerald-ai/10 rounded-t-sm" style="height: 55%;"></div>
+<div class="flex-1 bg-emerald-ai/10 rounded-t-sm" style="height: 45%;"></div>
+<div class="flex-1 bg-emerald-ai/10 rounded-t-sm" style="height: 70%;"></div>
+<div class="flex-1 bg-emerald-ai/20 rounded-t-sm" style="height: 85%;"></div>
+<div class="flex-1 bg-emerald-ai rounded-t-sm" style="height: 100%;"></div>
+</div>
+</div>
+<!-- Card 2: Total Units -->
+<div class="col-span-12 md:col-span-3 glass-card p-md rounded-xl">
+<div class="flex justify-between items-start mb-sm">
+<span class="font-label-caps text-on-surface-variant uppercase">Total Units</span>
+<span class="font-mono-data text-emerald-ai text-[12px]">+5.2%</span>
+</div>
+<h3 class="font-h2 text-on-background mb-xs">842.1k</h3>
+<div class="h-12 w-full mt-sm flex items-end gap-[2px]">
+<div class="flex-1 bg-emerald-ai/10 rounded-t-sm" style="height: 60%;"></div>
+<div class="flex-1 bg-emerald-ai/10 rounded-t-sm" style="height: 55%;"></div>
+<div class="flex-1 bg-emerald-ai/10 rounded-t-sm" style="height: 65%;"></div>
+<div class="flex-1 bg-emerald-ai/10 rounded-t-sm" style="height: 60%;"></div>
+<div class="flex-1 bg-emerald-ai/10 rounded-t-sm" style="height: 75%;"></div>
+<div class="flex-1 bg-emerald-ai/20 rounded-t-sm" style="height: 80%;"></div>
+<div class="flex-1 bg-emerald-ai rounded-t-sm" style="height: 85%;"></div>
+</div>
+</div>
+<!-- Card 3: Conversion Rate -->
+<div class="col-span-12 md:col-span-3 glass-card p-md rounded-xl">
+<div class="flex justify-between items-start mb-sm">
+<span class="font-label-caps text-on-surface-variant uppercase">Conversion</span>
+<span class="font-mono-data text-error text-[12px]">-0.8%</span>
+</div>
+<h3 class="font-h2 text-on-background mb-xs">3.42%</h3>
+<div class="h-12 w-full mt-sm flex items-end gap-[2px]">
+<div class="flex-1 bg-on-surface-variant/10 rounded-t-sm" style="height: 80%;"></div>
+<div class="flex-1 bg-on-surface-variant/10 rounded-t-sm" style="height: 75%;"></div>
+<div class="flex-1 bg-on-surface-variant/10 rounded-t-sm" style="height: 70%;"></div>
+<div class="flex-1 bg-on-surface-variant/10 rounded-t-sm" style="height: 80%;"></div>
+<div class="flex-1 bg-on-surface-variant/10 rounded-t-sm" style="height: 65%;"></div>
+<div class="flex-1 bg-on-surface-variant/20 rounded-t-sm" style="height: 60%;"></div>
+<div class="flex-1 bg-on-surface-variant/40 rounded-t-sm" style="height: 55%;"></div>
+</div>
+</div>
+<!-- Card 4: Growth Delta -->
+<div class="col-span-12 md:col-span-3 glass-card p-md rounded-xl">
+<div class="flex justify-between items-start mb-sm">
+<span class="font-label-caps text-on-surface-variant uppercase">Growth Delta</span>
+<span class="font-mono-data text-emerald-ai text-[12px]">+2.1%</span>
+</div>
+<h3 class="font-h2 text-on-background mb-xs">18.4%</h3>
+<div class="h-12 w-full mt-sm flex items-end gap-[2px]">
+<div class="flex-1 bg-electric-indigo/10 rounded-t-sm" style="height: 30%;"></div>
+<div class="flex-1 bg-electric-indigo/10 rounded-t-sm" style="height: 45%;"></div>
+<div class="flex-1 bg-electric-indigo/10 rounded-t-sm" style="height: 40%;"></div>
+<div class="flex-1 bg-electric-indigo/10 rounded-t-sm" style="height: 60%;"></div>
+<div class="flex-1 bg-electric-indigo/10 rounded-t-sm" style="height: 55%;"></div>
+<div class="flex-1 bg-electric-indigo/20 rounded-t-sm" style="height: 75%;"></div>
+<div class="flex-1 bg-electric-indigo rounded-t-sm" style="height: 90%;"></div>
+</div>
+</div>
+<!-- Center Content: Large Area Chart -->
+<div class="col-span-12 glass-card p-lg rounded-xl">
+<div class="flex justify-between items-start mb-lg">
+<div>
+<h3 class="font-h2 text-on-background mb-base">Actual Sales vs AI Predicted Sales</h3>
+<p class="font-body-sm text-on-surface-variant">30-day performance projection across all regional nodes.</p>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-emerald-ai"></span>
+<span class="font-label-caps text-on-surface-variant uppercase text-[10px]">Actual</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-electric-indigo"></span>
+<span class="font-label-caps text-on-surface-variant uppercase text-[10px]">AI Predicted</span>
+</div>
+</div>
+</div>
+<div class="relative h-[400px] w-full border-l border-b border-outline/10">
+<!-- SVG Chart Representation -->
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none">
+<!-- Grid Lines -->
+<line class="text-outline/5" stroke="currentColor" stroke-dasharray="4" x1="0" x2="100%" y1="25%" y2="25%"></line>
+<line class="text-outline/5" stroke="currentColor" stroke-dasharray="4" x1="0" x2="100%" y1="50%" y2="50%"></line>
+<line class="text-outline/5" stroke="currentColor" stroke-dasharray="4" x1="0" x2="100%" y1="75%" y2="75%"></line>
+<!-- AI Predicted Line (Indigo) -->
+<path d="M0,350 Q100,320 200,330 T400,280 T600,240 T800,180 T1000,150 T1200,120 T1400,100" fill="none" stroke="#6366f1" stroke-width="3"></path>
+<path d="M0,350 Q100,320 200,330 T400,280 T600,240 T800,180 T1000,150 T1200,120 T1400,100 V400 H0 Z" fill="url(#indigo-gradient)" opacity="0.1"></path>
+<!-- Actual Line (Emerald) - Stops at current date -->
+<path d="M0,360 Q100,340 200,345 T400,310 T600,290 T700,270" fill="none" stroke="#10b981" stroke-linecap="round" stroke-width="3"></path>
+<path d="M0,360 Q100,340 200,345 T400,310 T600,290 T700,270 V400 H0 Z" fill="url(#emerald-gradient)" opacity="0.1"></path>
+<!-- Current Time Marker -->
+<line stroke="#494551" stroke-dasharray="4" stroke-width="1" x1="50%" x2="50%" y1="0" y2="100%"></line>
+<defs>
+<lineargradient id="indigo-gradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#6366f1"></stop>
+<stop offset="100%" stop-color="#6366f1" stop-opacity="0"></stop>
+</lineargradient>
+<lineargradient id="emerald-gradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#10b981"></stop>
+<stop offset="100%" stop-color="#10b981" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+</svg>
+<!-- X-Axis Labels -->
+<div class="absolute -bottom-8 left-0 w-full flex justify-between font-mono-data text-on-surface-variant text-[10px] uppercase">
+<span>Day 0</span>
+<span>Day 5</span>
+<span>Day 10</span>
+<span>Day 15 (Current)</span>
+<span>Day 20</span>
+<span>Day 25</span>
+<span>Day 30</span>
+</div>
+</div>
+</div>
+<!-- Bottom Row: Additional Intelligence -->
+<div class="col-span-12 md:col-span-8 glass-card p-md rounded-xl">
+<h3 class="font-label-caps text-on-surface-variant uppercase mb-md">Top Performing Categories</h3>
+<div class="space-y-sm">
+<div class="flex items-center gap-md">
+<span class="w-24 font-body-sm text-on-surface">Fresh Produce</span>
+<div class="flex-1 h-3 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-emerald-ai rounded-full" style="width: 82%;"></div>
+</div>
+<span class="w-12 font-mono-data text-on-surface text-right">82%</span>
+</div>
+<div class="flex items-center gap-md">
+<span class="w-24 font-body-sm text-on-surface">Frozen Goods</span>
+<div class="flex-1 h-3 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-emerald-ai rounded-full" style="width: 64%;"></div>
+</div>
+<span class="w-12 font-mono-data text-on-surface text-right">64%</span>
+</div>
+<div class="flex items-center gap-md">
+<span class="w-24 font-body-sm text-on-surface">Dairy &amp; Eggs</span>
+<div class="flex-1 h-3 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-electric-indigo rounded-full" style="width: 91%;"></div>
+</div>
+<span class="w-12 font-mono-data text-on-surface text-right">91%</span>
+</div>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 glass-card p-md rounded-xl flex flex-col justify-center">
+<div class="flex items-center gap-sm mb-xs">
+<span class="material-symbols-outlined text-electric-indigo" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<span class="font-label-caps text-electric-indigo uppercase">AI Insight</span>
+</div>
+<p class="font-body-lg text-on-surface font-medium leading-tight">
+                    "Stock levels for <span class="text-electric-indigo">Dairy</span> are projected to drop by 18% during the upcoming weekend surge. Recommended order increase: 15.2%."
+                </p>
+<button class="mt-md text-electric-indigo font-semibold text-body-sm flex items-center gap-xs hover:gap-sm transition-all">
+                    Apply Optimization <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+<!-- SideNavBar (Hidden on Mobile) -->
+<aside class="fixed left-0 top-0 h-screen w-64 bg-surface-container-low/80 backdrop-blur-xl border-r border-outline/10 flex flex-col p-md space-y-xs hidden lg:flex pt-32">
+<div class="mb-lg px-sm">
+<h4 class="font-display text-h2 font-bold text-primary">Inventory Engine</h4>
+<p class="font-body-sm text-on-surface-variant opacity-70">V3.4 Active</p>
+</div>
+<nav class="flex-1 space-y-xs">
+<a class="flex items-center gap-sm p-sm bg-secondary-container text-on-secondary-container rounded-lg font-semibold transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-sm">Overview</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="font-body-sm">Forecasting</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-body-sm">Inventory</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">campaign</span>
+<span class="font-body-sm">Marketing</span>
+</a>
+</nav>
+<div class="pt-md border-t border-outline/10 space-y-xs">
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-sm">Help Center</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-sm">Log Out</span>
+</a>
+</div>
+</aside>
+</body></html>

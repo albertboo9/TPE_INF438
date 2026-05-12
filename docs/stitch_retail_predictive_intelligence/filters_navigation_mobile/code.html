@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e6e0e9",
+                    "inverse-surface": "#322f35",
+                    "on-surface-variant": "#494551",
+                    "on-secondary-fixed": "#1f1635",
+                    "on-surface": "#1d1b20",
+                    "on-background": "#1d1b20",
+                    "surface": "#fdf7ff",
+                    "on-tertiary-fixed-variant": "#594400",
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#ded8e0",
+                    "outline-variant": "#cbc4d2",
+                    "surface-container": "#f2ecf4",
+                    "on-secondary-fixed-variant": "#4b4263",
+                    "on-primary-container": "#e0d2ff",
+                    "inverse-on-surface": "#f5eff7",
+                    "surface-bright": "#fdf7ff",
+                    "outline": "#7a7582",
+                    "tertiary-container": "#c9a74d",
+                    "primary-fixed-dim": "#cfbcff",
+                    "tertiary-fixed-dim": "#e7c365",
+                    "background": "#fdf7ff",
+                    "surface-tint": "#6750a4",
+                    "on-error": "#ffffff",
+                    "primary-container": "#6750a4",
+                    "on-tertiary-container": "#503d00",
+                    "secondary-fixed": "#e9ddff",
+                    "on-tertiary-fixed": "#241a00",
+                    "secondary-container": "#e1d4fd",
+                    "secondary": "#63597c",
+                    "on-primary-fixed": "#22005d",
+                    "tertiary-fixed": "#ffdf93",
+                    "primary-fixed": "#e9ddff",
+                    "on-primary": "#ffffff",
+                    "inverse-primary": "#cfbcff",
+                    "tertiary": "#765b00",
+                    "surface-container-low": "#f8f2fa",
+                    "on-secondary-container": "#645a7d",
+                    "error-container": "#ffdad6",
+                    "primary": "#4f378a",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed-variant": "#4f378a",
+                    "secondary-fixed-dim": "#cdc0e9",
+                    "error": "#ba1a1a",
+                    "surface-container-high": "#ece6ee",
+                    "surface-container-highest": "#e6e0e9",
+                    "on-tertiary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "24px",
+                    "bento-gap": "20px",
+                    "xs": "8px",
+                    "sm": "16px",
+                    "base": "4px",
+                    "xl": "64px",
+                    "lg": "40px"
+            },
+            "fontFamily": {
+                    "mono-data": ["JetBrains Mono"],
+                    "h2": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "h1": ["Inter"],
+                    "display": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "mono-data": ["13px", {"lineHeight": "1", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                    "h2": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-lg antialiased">
+<!-- Top Navigation Anchor (As specified in JSON for Top-Level Destinations) -->
+<header class="flex justify-between items-center px-lg py-sm w-full docked full-width top-0 z-50 bg-surface/70 backdrop-blur-md border-b border-outline/10 shadow-sm">
+<div class="font-display text-h2 font-bold text-primary">RetailSense AI</div>
+<div class="hidden md:flex items-center space-x-md">
+<nav class="flex space-x-md">
+<a class="font-display text-body-lg font-semibold text-on-surface-variant hover:text-primary transition-colors" href="#">Executive</a>
+<a class="font-display text-body-lg font-semibold text-primary border-b-2 border-primary pb-2" href="#">Predictions</a>
+<a class="font-display text-body-lg font-semibold text-on-surface-variant hover:text-primary transition-colors" href="#">Intelligence</a>
+</nav>
+</div>
+<div class="flex items-center space-x-sm">
+<button class="material-symbols-outlined p-xs text-on-surface-variant hover:bg-surface-container rounded-full transition-all" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined p-xs text-on-surface-variant hover:bg-surface-container rounded-full transition-all" data-icon="settings">settings</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline/20">
+<img alt="Executive Profile" data-alt="A professional executive portrait of a high-ranking corporate leader in a minimalist, brightly lit office environment. The lighting is soft and high-key, emphasizing a clean and authoritative atmosphere. The color palette consists of neutral whites and soft greys with subtle deep blue accents. The style is modern, professional, and evocative of premium decision-making platforms." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3zDy9xYvfzOmjMTMkzNM67utjbUvp2Ehv7m7qK2D4bNJTRK0G_YEXcgVp6uNLHEWdZLqEPFlyGmDhlZEZaO0XMXEg24VXwQlRIrTsLr3BdglqSO-CyHHwfrBdTN_HHn7wkGqVhU0F0WV6ykmVqh7RVYFywJzig-Q3B18EKdnqxpKuMyckbNlYnmwD62c8s1d-8EGV4isTmhMB5OfyfytZrvJBRidrDzuaJ6KQFaG6lVUvm5BwcvgGhM1WJjynQVato00CF7LpqdNd"/>
+</div>
+</div>
+</header>
+<main class="min-h-screen pt-24 pb-32 px-md md:px-lg max-w-7xl mx-auto">
+<!-- Dashboard Header -->
+<div class="mb-lg flex flex-col md:flex-row md:items-end justify-between gap-md">
+<div>
+<span class="font-label-caps text-label-caps text-primary uppercase tracking-widest mb-xs block">Inventory Engine</span>
+<h1 class="font-h1 text-h1 text-on-surface">Forecasting Hub</h1>
+</div>
+<div class="flex items-center gap-sm">
+<div class="glass-panel px-sm py-xs rounded-xl flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="font-mono-data text-mono-data text-on-surface-variant">V3.4 Active</span>
+</div>
+</div>
+</div>
+<!-- Main Bento Grid -->
+<div class="grid grid-cols-12 gap-bento-gap">
+<!-- Mobile Filters (Full Screen / Bottom Sheet Style Container) -->
+<div class="col-span-12 lg:col-span-4 space-y-bento-gap">
+<div class="glass-panel p-md rounded-xl flex flex-col gap-md">
+<div class="flex items-center justify-between">
+<h2 class="font-h2 text-h2 text-on-surface">Filters</h2>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="tune">tune</span>
+</div>
+<!-- Date Range Picker -->
+<div class="space-y-xs">
+<label class="font-label-caps text-label-caps text-on-surface-variant">DATE RANGE</label>
+<div class="relative">
+<input class="w-full bg-[#F8FAFC] border border-outline/10 rounded-lg px-md py-sm font-body-sm text-on-surface focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all" type="text" value="Oct 24, 2023 - Jan 24, 2024"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="calendar_today">calendar_today</span>
+</div>
+</div>
+<!-- Manufacturer Search -->
+<div class="space-y-xs">
+<label class="font-label-caps text-label-caps text-on-surface-variant">MANUFACTURER</label>
+<div class="relative">
+<input class="w-full bg-[#F8FAFC] border border-outline/10 rounded-lg px-md py-sm pl-10 font-body-sm text-on-surface focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all" placeholder="Search manufacturers..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+</div>
+</div>
+<!-- Categories -->
+<div class="space-y-xs">
+<label class="font-label-caps text-label-caps text-on-surface-variant">CATEGORIES</label>
+<div class="flex flex-wrap gap-xs">
+<button class="px-sm py-xs bg-primary-container text-on-primary-container rounded-full font-body-sm font-semibold transition-all">Fresh Produce</button>
+<button class="px-sm py-xs bg-surface-container hover:bg-surface-container-highest text-on-surface-variant rounded-full font-body-sm transition-all">Dairy</button>
+<button class="px-sm py-xs bg-surface-container hover:bg-surface-container-highest text-on-surface-variant rounded-full font-body-sm transition-all">Frozen</button>
+<button class="px-sm py-xs bg-surface-container hover:bg-surface-container-highest text-on-surface-variant rounded-full font-body-sm transition-all">Pantry</button>
+</div>
+</div>
+<!-- Seasons -->
+<div class="space-y-xs">
+<label class="font-label-caps text-label-caps text-on-surface-variant">SEASONS</label>
+<div class="grid grid-cols-3 gap-xs">
+<button class="flex flex-col items-center justify-center p-sm glass-panel rounded-xl hover:bg-surface-container-highest transition-all group">
+<span class="material-symbols-outlined text-primary mb-xs" data-icon="wb_sunny">wb_sunny</span>
+<span class="font-label-caps text-[10px]">DRY</span>
+</button>
+<button class="flex flex-col items-center justify-center p-sm glass-panel rounded-xl bg-secondary-container border-primary/20 transition-all">
+<span class="material-symbols-outlined text-primary mb-xs" data-icon="water_drop">water_drop</span>
+<span class="font-label-caps text-[10px]">RAINY</span>
+</button>
+<button class="flex flex-col items-center justify-center p-sm glass-panel rounded-xl hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined text-primary mb-xs" data-icon="star">star</span>
+<span class="font-label-caps text-[10px]">RAMADAN</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Status Summary Card -->
+<div class="glass-panel p-md rounded-xl">
+<div class="flex items-center gap-sm mb-md">
+<div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-emerald-600" data-icon="analytics">analytics</span>
+</div>
+<div>
+<h3 class="font-h2 text-body-lg font-bold">Engine Status</h3>
+<p class="text-body-sm text-on-surface-variant">Healthy • All inputs synced</p>
+</div>
+</div>
+<div class="space-y-sm">
+<div class="flex justify-between items-center">
+<span class="text-body-sm text-on-surface-variant">Sync Progress</span>
+<span class="font-mono-data text-mono-data">94%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full w-[94%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Visualization Content Area -->
+<div class="col-span-12 lg:col-span-8 space-y-bento-gap">
+<!-- Main Chart Card -->
+<div class="glass-panel p-md rounded-xl h-[400px] flex flex-col">
+<div class="flex items-center justify-between mb-lg">
+<div>
+<h2 class="font-h2 text-h2 text-on-surface">Projected Demand</h2>
+<p class="text-body-sm text-on-surface-variant">Units per Week • Fresh Produce</p>
+</div>
+<div class="flex gap-xs">
+<button class="p-xs glass-panel rounded-lg hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="download">download</span>
+</button>
+<button class="p-xs glass-panel rounded-lg hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<div class="flex-grow flex items-end justify-between gap-xs pb-sm">
+<!-- Mock Area Chart Visual -->
+<div class="w-full h-full relative">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 800 200">
+<defs>
+<lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#4f378a" stop-opacity="0.1"></stop>
+<stop offset="100%" stop-color="#4f378a" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,150 Q100,120 200,140 T400,100 T600,130 T800,80 L800,200 L0,200 Z" fill="url(#chartGradient)"></path>
+<path d="M0,150 Q100,120 200,140 T400,100 T600,130 T800,80" fill="none" stroke="#4f378a" stroke-width="2.5"></path>
+</svg>
+</div>
+</div>
+<div class="flex justify-between pt-sm border-t border-outline/5">
+<span class="font-mono-data text-mono-data text-on-surface-variant">OCT</span>
+<span class="font-mono-data text-mono-data text-on-surface-variant">NOV</span>
+<span class="font-mono-data text-mono-data text-on-surface-variant">DEC</span>
+<span class="font-mono-data text-mono-data text-on-surface-variant">JAN</span>
+<span class="font-mono-data text-mono-data text-on-surface-variant">FEB</span>
+</div>
+</div>
+<!-- Bottom Bento Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-bento-gap">
+<!-- Inventory Risk -->
+<div class="glass-panel p-md rounded-xl">
+<div class="flex items-center justify-between mb-sm">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase">STOCKOUT RISK</h3>
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+</div>
+<div class="flex items-baseline gap-xs">
+<span class="font-h1 text-h1">12.4%</span>
+<span class="text-body-sm text-error font-semibold">+2.1%</span>
+</div>
+<p class="text-body-sm text-on-surface-variant mt-xs">High risk in Dairy Category for Dec Week 2.</p>
+</div>
+<!-- Supply Efficiency -->
+<div class="glass-panel p-md rounded-xl">
+<div class="flex items-center justify-between mb-sm">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase">SUPPLY EFFICIENCY</h3>
+<span class="material-symbols-outlined text-primary" data-icon="bolt">bolt</span>
+</div>
+<div class="flex items-baseline gap-xs">
+<span class="font-h1 text-h1">98.2%</span>
+<span class="text-body-sm text-emerald-600 font-semibold">+0.4%</span>
+</div>
+<p class="text-body-sm text-on-surface-variant mt-xs">Optimal performance across major suppliers.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button (FAB) -->
+<!-- Trigger for AI action, using Predictive CTA Indigo -->
+<button class="fixed bottom-24 md:bottom-12 right-6 md:right-12 bg-[#4f378a] hover:bg-[#3d2b6b] text-white flex items-center gap-sm px-lg py-md rounded-full shadow-lg transition-all scale-100 hover:scale-105 active:scale-95 z-50 group">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-display font-semibold tracking-tight">Generate Forecast</span>
+</button>
+<!-- Mobile Bottom Navigation Shell -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-low/80 backdrop-blur-xl border-t border-outline/10 px-md py-xs flex justify-between items-center z-50">
+<div class="flex flex-col items-center p-xs gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-sm text-[10px]">Overview</span>
+</div>
+<div class="flex flex-col items-center p-xs gap-1 bg-secondary-container text-on-secondary-container rounded-lg px-md">
+<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+<span class="font-body-sm text-[10px] font-semibold">Forecasting</span>
+</div>
+<div class="flex flex-col items-center p-xs gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-body-sm text-[10px]">Inventory</span>
+</div>
+<div class="flex flex-col items-center p-xs gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="campaign">campaign</span>
+<span class="font-body-sm text-[10px]">Marketing</span>
+</div>
+</nav>
+</body></html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e6e0e9",
+                        "inverse-surface": "#322f35",
+                        "on-surface-variant": "#494551",
+                        "on-secondary-fixed": "#1f1635",
+                        "on-surface": "#1d1b20",
+                        "on-background": "#1d1b20",
+                        "surface": "#fdf7ff",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#ded8e0",
+                        "outline-variant": "#cbc4d2",
+                        "surface-container": "#f2ecf4",
+                        "on-secondary-fixed-variant": "#4b4263",
+                        "on-primary-container": "#e0d2ff",
+                        "inverse-on-surface": "#f5eff7",
+                        "surface-bright": "#fdf7ff",
+                        "outline": "#7a7582",
+                        "tertiary-container": "#c9a74d",
+                        "primary-fixed-dim": "#cfbcff",
+                        "tertiary-fixed-dim": "#e7c365",
+                        "background": "#fdf7ff",
+                        "surface-tint": "#6750a4",
+                        "on-error": "#ffffff",
+                        "primary-container": "#6750a4",
+                        "on-tertiary-container": "#503d00",
+                        "secondary-fixed": "#e9ddff",
+                        "on-tertiary-fixed": "#241a00",
+                        "secondary-container": "#e1d4fd",
+                        "secondary": "#63597c",
+                        "on-primary-fixed": "#22005d",
+                        "tertiary-fixed": "#ffdf93",
+                        "primary-fixed": "#e9ddff",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#cfbcff",
+                        "tertiary": "#765b00",
+                        "surface-container-low": "#f8f2fa",
+                        "on-secondary-container": "#645a7d",
+                        "error-container": "#ffdad6",
+                        "primary": "#4f378a",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#4f378a",
+                        "secondary-fixed-dim": "#cdc0e9",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#ece6ee",
+                        "surface-container-highest": "#e6e0e9",
+                        "on-tertiary": "#ffffff",
+                        "emerald-ai": "#10b981",
+                        "electric-indigo": "#6366f1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "24px",
+                        "bento-gap": "20px",
+                        "xs": "8px",
+                        "sm": "16px",
+                        "base": "4px",
+                        "xl": "64px",
+                        "lg": "40px"
+                    },
+                    "fontFamily": {
+                        "mono-data": ["JetBrains Mono"],
+                        "h2": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "h1": ["Inter"],
+                        "display": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "mono-data": ["13px", {"lineHeight": "1", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                        "h2": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-sm min-h-screen">
+<!-- TopNavBar -->
+<header class="docked full-width top-0 z-50 bg-surface/70 backdrop-blur-md dark:bg-surface-dim/70 flex justify-between items-center px-lg py-sm w-full border-b border-outline/10 shadow-sm sticky">
+<div class="flex items-center gap-sm">
+<h1 class="font-display text-h2 font-bold text-primary dark:text-primary-fixed">RetailSense AI</h1>
+<div class="hidden md:flex gap-md items-center">
+<a class="font-display text-body-lg font-semibold text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Executive</a>
+<a class="font-display text-body-lg font-semibold text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Predictions</a>
+<a class="font-display text-body-lg font-semibold text-primary dark:text-primary-fixed border-b-2 border-primary dark:border-primary-fixed pb-2" href="#">Intelligence</a>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<div class="flex items-center gap-xs px-sm py-xs bg-emerald-ai/10 text-emerald-ai rounded-full font-semibold text-label-caps">
+<span class="w-2 h-2 rounded-full bg-emerald-ai animate-pulse"></span>
+                Live Data
+            </div>
+<button class="material-symbols-outlined text-on-surface-variant p-xs hover:bg-surface-variant/50 rounded-full transition-all">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant p-xs hover:bg-surface-variant/50 rounded-full transition-all">settings</button>
+<img alt="Executive Profile" class="w-8 h-8 rounded-full border border-outline/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChBejqMfTVVVNNddeA2GcPhdEAE4uSGyLSPBdR9g-VRxp6gT0HuhIUjS0M4CRY7CeNz-EpUaRugs_LpGkMwSuZIER8lJLZAGC_We00luyNU98tn6PXg1HAekJ0pFLmW8pqiv3RzMZDTxoR2mUdWRYmuuTAkFC7GbcjGmqCUWAOFq6xKhQVK2X_Zy7wcfy_qYftBYLy_IP4HMuGOLLigzyVM_p0XZH3eOqBr6QOeUEkHh8gwL0JuYqy1or8eqC7kLq4pzqu42lpLymc"/>
+</div>
+</header>
+<main class="max-w-7xl mx-auto p-md space-y-md">
+<!-- Alerts Section -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-sm">
+<div class="p-md rounded-xl bg-error-container text-on-error-container flex items-center gap-md border border-error/10">
+<span class="material-symbols-outlined text-[32px]">warning</span>
+<div>
+<p class="font-label-caps uppercase text-error">Critical Stock Alert</p>
+<p class="font-h2 text-body-lg">Low inventory on High-Velocity SKU-4429</p>
+</div>
+</div>
+<div class="p-md rounded-xl bg-primary-container text-on-primary-container flex items-center gap-md border border-primary/10">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<div>
+<p class="font-label-caps uppercase text-on-primary-container opacity-80">AI Suggestion</p>
+<p class="font-h2 text-body-lg">Promote SKU-1102 to clear seasonal surplus</p>
+</div>
+</div>
+</section>
+<!-- Main Intelligence Dashboard -->
+<div class="grid grid-cols-12 gap-bento-gap">
+<!-- Sales Density Heatmap - Full Width Mobile, 8 Cols Desktop -->
+<div class="col-span-12 lg:col-span-8 glass-card rounded-xl p-md flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<h2 class="font-h2 text-h2 text-on-surface">Sales Density Heatmap</h2>
+<span class="text-label-caps text-on-surface-variant">Real-time Regional Distribution</span>
+</div>
+<div class="relative overflow-hidden rounded-lg bg-surface-container-low h-64 border border-outline/10 group">
+<img class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" data-alt="A sophisticated dark-themed world map displayed on a glass screen with glowing emerald and electric indigo data clusters representing sales density. The lighting is low and atmospheric, emphasizing the vibrant neon-like hotspots across major metropolitan areas. High-contrast digital aesthetics suggest advanced retail intelligence and real-time global monitoring in a minimalist light-mode environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTJf-h-61NA24_NZVsO2-BlTpwXbcRwX2e-IAxH_bmv-YBQun0J6_oWppq2uqFUBloCsIr5wzzYu96tOzVrJ_gFgmc7bzYONTqVrHqTkibAn-7P5MGFlLQ271ox6bLHqQLnGWVL8i9o9NtaUPPp8LC8Y0zOutypNVKCA9F2L6I95zImiWIBdWFR2lM1xvOGLZXX448i-pu3C9R_pI3cpjyl0zsny3P7lcG9XZ_LJaknTFbB4lYjFsfrQVm_E-8IobW0FnyCzdCa65z"/>
+<div class="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-surface/40 to-transparent">
+<div class="flex flex-col items-center gap-xs">
+<span class="material-symbols-outlined text-electric-indigo text-display animate-pulse">location_searching</span>
+<p class="font-mono-data text-on-surface font-bold px-sm py-base bg-white/80 rounded-full shadow-sm">Scan Active: APAC Region</p>
+</div>
+</div>
+</div>
+<div class="flex gap-sm overflow-x-auto hide-scrollbar pb-xs">
+<div class="flex-shrink-0 bg-surface-container-highest px-md py-sm rounded-lg min-w-[140px] border border-outline/5">
+<p class="text-label-caps text-on-surface-variant">New York</p>
+<p class="font-mono-data text-h2 text-emerald-ai">124.5k</p>
+</div>
+<div class="flex-shrink-0 bg-surface-container-highest px-md py-sm rounded-lg min-w-[140px] border border-outline/5">
+<p class="text-label-caps text-on-surface-variant">London</p>
+<p class="font-mono-data text-h2 text-electric-indigo">98.2k</p>
+</div>
+<div class="flex-shrink-0 bg-surface-container-highest px-md py-sm rounded-lg min-w-[140px] border border-outline/5">
+<p class="text-label-caps text-on-surface-variant">Tokyo</p>
+<p class="font-mono-data text-h2 text-emerald-ai">156.1k</p>
+</div>
+<div class="flex-shrink-0 bg-surface-container-highest px-md py-sm rounded-lg min-w-[140px] border border-outline/5">
+<p class="text-label-caps text-on-surface-variant">Singapore</p>
+<p class="font-mono-data text-h2 text-electric-indigo">72.4k</p>
+</div>
+</div>
+</div>
+<!-- AI Forecasting Action - 4 Cols Desktop -->
+<div class="col-span-12 lg:col-span-4 glass-card rounded-xl p-md flex flex-col justify-between border-2 border-electric-indigo/20">
+<div class="space-y-sm">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-lg bg-electric-indigo flex items-center justify-center text-white">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<h3 class="font-h2 text-body-lg font-bold">Predictive Engine</h3>
+</div>
+<p class="text-on-surface-variant text-body-sm leading-relaxed">
+                        Our Emerald AI model has detected a potential shift in consumer behavior for the upcoming fiscal quarter.
+                    </p>
+<div class="p-sm rounded-lg bg-surface-container-low border border-outline/5 space-y-xs">
+<div class="flex justify-between">
+<span class="text-label-caps">Accuracy Score</span>
+<span class="font-mono-data text-emerald-ai">98.4%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-emerald-ai w-[98%]"></div>
+</div>
+</div>
+</div>
+<button class="mt-md w-full py-md bg-electric-indigo text-white font-display font-bold rounded-xl flex items-center justify-center gap-sm hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined">auto_graph</span>
+                    Generate Forecast
+                </button>
+</div>
+<!-- SKU Performance Optimized Table/Cards -->
+<div class="col-span-12 glass-card rounded-xl overflow-hidden">
+<div class="p-md border-b border-outline/10 flex justify-between items-center bg-surface-container-low/30">
+<div>
+<h2 class="font-h2 text-h2">SKU Performance</h2>
+<p class="text-body-sm text-on-surface-variant">Top moving inventory items</p>
+</div>
+<div class="flex gap-xs">
+<button class="px-sm py-xs bg-surface-container-highest border border-outline/10 rounded-lg text-label-caps">Filter</button>
+<button class="px-sm py-xs bg-surface-container-highest border border-outline/10 rounded-lg text-label-caps">Export</button>
+</div>
+</div>
+<!-- Desktop Table View -->
+<div class="hidden md:block overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low text-label-caps text-on-surface-variant border-b border-outline/10">
+<tr>
+<th class="px-md py-sm">Product SKU</th>
+<th class="px-md py-sm">Category</th>
+<th class="px-md py-sm">Stock Status</th>
+<th class="px-md py-sm">Revenue (7d)</th>
+<th class="px-md py-sm">Velocity</th>
+<th class="px-md py-sm">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline/5 font-body-sm">
+<tr class="hover:bg-surface-variant/20 transition-colors">
+<td class="px-md py-md font-mono-data font-semibold">SKU-8812-BL</td>
+<td class="px-md py-md">Activewear</td>
+<td class="px-md py-md">
+<span class="px-xs py-[2px] bg-emerald-ai/10 text-emerald-ai rounded text-[11px] font-bold">OPTIMAL</span>
+</td>
+<td class="px-md py-md font-mono-data">$42,190</td>
+<td class="px-md py-md text-emerald-ai font-bold">↑ 12.4%</td>
+<td class="px-md py-md">
+<button class="material-symbols-outlined text-on-surface-variant">more_horiz</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-variant/20 transition-colors">
+<td class="px-md py-md font-mono-data font-semibold">SKU-4429-GR</td>
+<td class="px-md py-md">Electronics</td>
+<td class="px-md py-md">
+<span class="px-xs py-[2px] bg-error-container text-error rounded text-[11px] font-bold">LOW STOCK</span>
+</td>
+<td class="px-md py-md font-mono-data">$89,440</td>
+<td class="px-md py-md text-emerald-ai font-bold">↑ 44.1%</td>
+<td class="px-md py-md">
+<button class="material-symbols-outlined text-on-surface-variant">more_horiz</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-variant/20 transition-colors">
+<td class="px-md py-md font-mono-data font-semibold">SKU-1102-WH</td>
+<td class="px-md py-md">Home Goods</td>
+<td class="px-md py-md">
+<span class="px-xs py-[2px] bg-surface-container-highest text-on-surface-variant rounded text-[11px] font-bold">SURPLUS</span>
+</td>
+<td class="px-md py-md font-mono-data">$12,800</td>
+<td class="px-md py-md text-error font-bold">↓ 8.2%</td>
+<td class="px-md py-md">
+<button class="material-symbols-outlined text-on-surface-variant">more_horiz</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Mobile Card View -->
+<div class="md:hidden p-md space-y-md">
+<div class="p-sm bg-surface-container-low rounded-lg border border-outline/5 space-y-sm">
+<div class="flex justify-between items-start">
+<span class="font-mono-data font-bold text-primary">SKU-8812-BL</span>
+<span class="px-xs py-[2px] bg-emerald-ai/10 text-emerald-ai rounded text-[11px] font-bold">OPTIMAL</span>
+</div>
+<div class="flex justify-between text-body-sm">
+<span class="text-on-surface-variant">Revenue (7d)</span>
+<span class="font-mono-data">$42,190</span>
+</div>
+<div class="flex justify-between text-body-sm">
+<span class="text-on-surface-variant">Velocity</span>
+<span class="text-emerald-ai font-bold">↑ 12.4%</span>
+</div>
+</div>
+<div class="p-sm bg-surface-container-low rounded-lg border border-outline/5 space-y-sm">
+<div class="flex justify-between items-start">
+<span class="font-mono-data font-bold text-primary">SKU-4429-GR</span>
+<span class="px-xs py-[2px] bg-error-container text-error rounded text-[11px] font-bold">LOW STOCK</span>
+</div>
+<div class="flex justify-between text-body-sm">
+<span class="text-on-surface-variant">Revenue (7d)</span>
+<span class="font-mono-data">$89,440</span>
+</div>
+<div class="flex justify-between text-body-sm">
+<span class="text-on-surface-variant">Velocity</span>
+<span class="text-emerald-ai font-bold">↑ 44.1%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface/70 backdrop-blur-xl border-t border-outline/10 flex justify-around items-center py-sm z-50">
+<button class="flex flex-col items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-semibold">Overview</span>
+</button>
+<button class="flex flex-col items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="text-[10px] font-semibold">Forecasting</span>
+</button>
+<button class="flex flex-col items-center gap-xs text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="text-[10px] font-bold">Inventory</span>
+</button>
+<button class="flex flex-col items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined">campaign</span>
+<span class="text-[10px] font-semibold">Marketing</span>
+</button>
+</nav>
+<!-- SideNavBar (Hidden on Mobile) -->
+<aside class="hidden md:flex fixed left-0 top-0 h-screen w-64 bg-surface-container-low/80 backdrop-blur-xl border-r border-outline/10 flex-col p-md space-y-md z-[60]">
+<div class="space-y-base">
+<h1 class="font-display text-h2 font-bold text-primary">RetailSense AI</h1>
+<p class="text-label-caps text-on-surface-variant">V3.4 Active</p>
+</div>
+<div class="flex flex-col space-y-xs flex-grow">
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">dashboard</span>
+<span class="font-body-sm">Overview</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">query_stats</span>
+<span class="font-body-sm">Forecasting</span>
+</a>
+<a class="flex items-center gap-sm p-sm bg-secondary-container text-on-secondary-container rounded-lg font-semibold shadow-sm" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="font-body-sm">Inventory</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">campaign</span>
+<span class="font-body-sm">Marketing</span>
+</a>
+</div>
+<div class="space-y-xs pt-md border-t border-outline/10">
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-sm">Help Center</span>
+</a>
+<a class="flex items-center gap-sm p-sm text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined text-error">logout</span>
+<span class="font-body-sm">Log Out</span>
+</a>
+</div>
+</aside>
+</body></html>
