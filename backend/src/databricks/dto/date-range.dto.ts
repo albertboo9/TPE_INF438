@@ -1,4 +1,4 @@
-import { IsOptional, IsDateString, IsBoolean, IsNumber, Min } from 'class-validator';
+import { IsOptional, IsDateString, IsNumber, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class DateRangeDto {

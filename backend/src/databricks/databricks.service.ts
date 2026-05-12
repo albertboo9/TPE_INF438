@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { DbType, Row, Session } from '@databricks/sql';
+import { DBSQLClient, DBSQLSession } from '@databricks/sql';
 
 export interface DatabricksConfig {
   host: string;
@@ -10,7 +10,8 @@ export interface DatabricksConfig {
 @Injectable()
 export class DatabricksService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(DatabricksService.name);
-  private session: Session | null = null;
+  private client: DBSQLClient | null = null;
+  private session: DBSQLSession | null = null;
 
   constructor() {}
 
@@ -34,13 +35,14 @@ export class DatabricksService implements OnModuleInit, OnModuleDestroy {
         throw new Error('Missing Databricks configuration. Check DATABRICKS_HOST, DATABRICKS_PATH, DATABRICKS_TOKEN');
       }
 
-      const { default: Db } = await import('@databricks/sql');
-      
-      this.session = await Db.connect({
+      this.client = new DBSQLClient();
+      await this.client.connect({
         host: config.host,
         path: config.path,
         token: config.token,
       });
+      // openSession returns IDBSQLSession, cast to DBSQLSession for compatibility
+      this.session = (await this.client.openSession()) as unknown as DBSQLSession;
 
       this.logger.log('Connected to Databricks SQL Warehouse');
     } catch (error) {
@@ -59,28 +61,31 @@ export class DatabricksService implements OnModuleInit, OnModuleDestroy {
       }
       this.session = null;
     }
+    if (this.client) {
+      try {
+        await this.client.close();
+      } catch (error) {
+        this.logger.error('Error closing Databricks client', error);
+      }
+      this.client = null;
+    }
   }
 
-  private async ensureConnection(): Promise<Session> {
+  private async ensureConnection(): Promise<DBSQLSession> {
     if (!this.session) {
       await this.connect();
     }
     return this.session!;
   }
 
-  async executeQuery<T = Row>(sql: string, params?: Record<string, unknown>): Promise<T[]> {
+  async executeQuery<T = Record<string, unknown>>(sql: string): Promise<T[]> {
     const session = await this.ensureConnection();
     
     try {
-      const query = session.sql(sql);
-      const resultSet = await query.execute();
+      const operation = await session.executeStatement(sql);
+      const results = await operation.fetchAll();
       
-      const results: T[] = [];
-      for await (const row of resultSet) {
-        results.push(row as T);
-      }
-      
-      return results;
+      return results as T[];
     } catch (error) {
       this.logger.error(`Query execution failed: ${sql}`, error);
       throw error;

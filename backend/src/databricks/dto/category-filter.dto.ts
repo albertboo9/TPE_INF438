@@ -1,4 +1,4 @@
-import { IsOptional, IsArray, IsString, IsBoolean, IsNumber, Min } from 'class-validator';
+import { IsOptional, IsArray, IsString, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CategoryFilterDto {
@@ -11,9 +11,4 @@ export class CategoryFilterDto {
   @Type(() => Number)
   @IsNumber()
   limit?: number;
-
-  @IsOptional()
-  @Type(() => Boolean)
-  @IsBoolean()
-  includePromotionOnly?: boolean;
 }

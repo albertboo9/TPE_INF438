@@ -17,5 +17,9 @@
 }
 
 body {
-  @apply bg-background text-on-background font-bodyLg;
+  background-color: #fdf7ff;
+  color: #1d1b20;
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
 }
