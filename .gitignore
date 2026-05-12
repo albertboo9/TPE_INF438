@@ -8,3 +8,5 @@ __pycache__/
 .env
 .DS_Store
 *.tmp
+
+stitch_retail_predictive_intelligence/

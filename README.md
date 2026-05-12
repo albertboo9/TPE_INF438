@@ -119,8 +119,47 @@ pip install -r requirements.txt
 
 ## Documentation
 - [Detailed Plan](.kilo/plans/1777711784236-crisp-star.md)
+- [Big Data Visualization Plan](.kilo/plans/1778551692599-curious-rocket.md)
 - Notebooks in /notebooks/
 - Final report in /docs/
+
+## Plateforme de Visualisation Big Data RetailSense AI
+
+Cette plateforme fournit un dashboard analytique moderne pour l'analyse prédictive des ventes de la chaîne Corporación Favorita (125M lignes de données).
+
+### Architecture
+```
+Databricks Delta Lake (train_clean) → NestJS API Gateway (port 3000) → React Dashboard (port 5173)
+```
+
+### Pages du Dashboard
+- **Dashboard** (executive_overview) : Vue d'ensemble avec métriques clés (Revenue, Units, Conversion, Growth)
+- **Predictions** (predictive_insights) : Prévisions et recommandations produits avec module Smart Promotions
+- **Intelligence** (product_intelligence) : Analyse détaillée des SKU avec tableau interactif
+
+### Démarrage rapide - Backend
+```bash
+cd backend
+cp .env.example .env
+# Configurer DATABRICKS_HOST, DATABRICKS_PATH, DATABRICKS_TOKEN
+npm install
+npm run start:dev
+```
+
+### Démarrage rapide - Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Endpoints API
+| Endpoint | Description | Paramètres |
+|----------|-------------|------------|
+| GET /stats/global | CA total, volume, impact promo | - |
+| GET /stats/temporal | Ventes par jour/semaine | `?year=2024&month=12` |
+| GET /stats/categories | Top 10 catégories | `?limit=10` |
+| GET /stats/stores | Performance magasins | `?limit=10` |
 
 ## Contributing
 This is an academic project. Follow the established architecture and document all changes.
