@@ -1,4 +1,4 @@
-import {
+ import {
   Controller,
   Get,
   Query,
@@ -11,6 +11,7 @@ import { DateRangeRequest } from '../../application/dto/request/DateRangeRequest
 import { CategoryFilterRequest } from '../../application/dto/request/CategoryFilterRequest';
 import { ResponseInterceptor } from '../interceptors/ResponseInterceptor';
 import { JwtAuthGuard } from '../../infrastructure/adapters/security/JwtAuthGuard';
+import { IStatsRepository } from '../../core/domain/ports/out/IStatsRepository';
 
 @Controller('stats')
 @UseInterceptors(ResponseInterceptor)
@@ -24,6 +25,8 @@ export class StatsController {
     private readonly categoryStatsUseCase: CategoryStatsUseCase,
     @Inject(StoreStatsUseCase)
     private readonly storeStatsUseCase: StoreStatsUseCase,
+    @Inject(IStatsRepository)
+    private readonly databricksRepo: IStatsRepository & { discoverTables?(): Promise<string[]> },
   ) {}
 
   @Get('global')
