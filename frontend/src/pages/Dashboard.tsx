@@ -18,7 +18,7 @@ const Dashboard: React.FC = () => {
   const { data: storeData = [], isLoading: storeLoading } = useStoreStats({ limit: 10 });
 
   const chartData: TemporalData[] = temporalData.map(d => ({
-    date: `${d.annee}-${d.mois}-${d.dayOfWeek}`,
+    date: d.date,
     sales: d.sales,
     dayOfWeek: d.dayOfWeek,
     month: d.month,
