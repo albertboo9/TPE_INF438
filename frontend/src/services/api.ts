@@ -37,6 +37,31 @@ class ApiClient {
   async getStoreStats(limit: number = 10): Promise<StoreStat[]> {
     return this.fetcher<StoreStat[]>(`/stats/stores?limit=${limit}`);
   }
+
+  async predictSales(data: {
+    magasin_vec: number;
+    saison_vec: number;
+    ventes_veille: number;
+    moyenne_ventes_7j: number;
+    est_weekend: number;
+    est_jour_ferie: number;
+    indicateur_promotion: number;
+    prix_petrole: number;
+  }): Promise<{ status: string; prediction_transactions: number; source?: string }> {
+    const response = await fetch(`${API_BASE_URL}/predict`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Prediction API Error: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
 }
 
 export const apiClient = new ApiClient();

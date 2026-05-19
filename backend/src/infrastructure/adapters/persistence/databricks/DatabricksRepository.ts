@@ -46,13 +46,36 @@ export class DatabricksRepository implements IStatsRepository {
     if (!host || !path || !token) {
       throw new DatabricksConnectionException('Missing Databricks configuration');
     }
-    try {
-      this.client = new DBSQLClient();
-      await this.client.connect({ host, path, token });
-      this.session = (await this.client.openSession()) as unknown as DBSQLSession;
-      this.logger.log('Connected to Databricks SQL Warehouse');
-    } catch (error) {
-      throw new DatabricksConnectionException('Failed to connect', error instanceof Error ? error : undefined);
+
+    const maxRetries = 5;
+    const baseDelayMs = 1500;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        this.logger.log(`Connecting to Databricks SQL Warehouse (attempt ${attempt}/${maxRetries})...`);
+        this.client = new DBSQLClient();
+        await this.client.connect({ host, path, token });
+        this.session = (await this.client.openSession()) as unknown as DBSQLSession;
+        this.logger.log('Connected to Databricks SQL Warehouse');
+        return;
+      } catch (error) {
+        this.logger.warn(
+          `Connection attempt ${attempt}/${maxRetries} failed: ${error instanceof Error ? error.message : String(error)}`
+        );
+        
+        await this.disconnect();
+
+        if (attempt === maxRetries) {
+          throw new DatabricksConnectionException(
+            `Failed to connect to Databricks after ${maxRetries} attempts`,
+            error instanceof Error ? error : undefined
+          );
+        }
+
+        const delay = baseDelayMs * Math.pow(2, attempt - 1) + Math.random() * 500;
+        this.logger.log(`Retrying Databricks connection in ${Math.round(delay)}ms...`);
+        await this.delay(delay);
+      }
     }
   }
 
@@ -106,10 +129,10 @@ export class DatabricksRepository implements IStatsRepository {
   async getGlobalStats(): Promise<GlobalStatsEntity> {
     const r = await this.executeQuery<Record<string, unknown>>(`
       SELECT
-        COALESCE(SUM(ventes),0) as totalRevenue,
+        COALESCE(SUM(CAST(unit_sales AS DOUBLE)), 0) as totalRevenue,
         COUNT(*) as totalVolume,
-        COALESCE(SUM(CASE WHEN en_promotion=true THEN ventes ELSE 0 END),0) as promotionImpact,
-        ROUND(COALESCE(SUM(CASE WHEN en_promotion=true THEN ventes ELSE 0 END),0)*100.0/NULLIF(COALESCE(SUM(ventes),0),0),2) as promotionPercentage
+        COALESCE(SUM(CASE WHEN onpromotion = 'True' THEN CAST(unit_sales AS DOUBLE) ELSE 0 END), 0) as promotionImpact,
+        ROUND(COALESCE(SUM(CASE WHEN onpromotion = 'True' THEN CAST(unit_sales AS DOUBLE) ELSE 0 END), 0) * 100.0 / NULLIF(COALESCE(SUM(CAST(unit_sales AS DOUBLE)), 0), 0), 2) as promotionPercentage
       FROM ${this.T}
     `);
     return GlobalStatsEntity.create({
@@ -122,13 +145,18 @@ export class DatabricksRepository implements IStatsRepository {
 
   async getTemporalStats(year?: number, month?: number): Promise<TemporalDataEntity[]> {
     const c: string[] = [];
-    if (year != null) c.push(`annee=${Math.floor(year)}`);
-    if (month != null) c.push(`mois=${Math.floor(month)}`);
+    if (year != null) c.push(`YEAR(TO_DATE(date, 'yyyy-MM-dd')) = ${Math.floor(year)}`);
+    if (month != null) c.push(`MONTH(TO_DATE(date, 'yyyy-MM-dd')) = ${Math.floor(month)}`);
     const w = c.length ? ` WHERE ${c.join(' AND ')}` : '';
     const r = await this.executeQuery<Record<string, unknown>>(`
-      SELECT annee,mois,jour_semaine,COALESCE(SUM(ventes),0) as ventes
+      SELECT 
+        YEAR(TO_DATE(date, 'yyyy-MM-dd')) as annee,
+        MONTH(TO_DATE(date, 'yyyy-MM-dd')) as mois,
+        DAYOFWEEK(TO_DATE(date, 'yyyy-MM-dd')) as jour_semaine,
+        COALESCE(SUM(CAST(unit_sales AS DOUBLE)), 0) as ventes
       FROM ${this.T} ${w}
-      GROUP BY annee,mois,jour_semaine ORDER BY annee,mois,jour_semaine
+      GROUP BY annee, mois, jour_semaine 
+      ORDER BY annee, mois, jour_semaine
     `);
     return r.map(row => TemporalDataEntity.fromDatabricks(row as any));
   }
@@ -136,11 +164,16 @@ export class DatabricksRepository implements IStatsRepository {
   async getCategoryStats(limit?: number): Promise<CategoryStatEntity[]> {
     const l = this.safeLimit(limit);
     const r = await this.executeQuery<Record<string, unknown>>(`
-      SELECT i.categorie_groupe,COALESCE(SUM(t.ventes),0) as totalSales,
-        ROUND(COALESCE(SUM(t.ventes),0)*100.0/NULLIF((SELECT COALESCE(SUM(ventes),0) FROM ${this.T}),0),2) as percentage,
+      SELECT 
+        i.family as categorie_groupe,
+        COALESCE(SUM(CAST(t.unit_sales AS DOUBLE)), 0) as totalSales,
+        ROUND(COALESCE(SUM(CAST(t.unit_sales AS DOUBLE)), 0) * 100.0 / NULLIF((SELECT COALESCE(SUM(CAST(unit_sales AS DOUBLE)), 0) FROM ${this.T}), 0), 2) as percentage,
         COUNT(*) as transactionCount
-      FROM ${this.T} t JOIN ${this.I} i ON t.item_id=i.item_id
-      GROUP BY i.categorie_groupe ORDER BY totalSales DESC LIMIT ${l}
+      FROM ${this.T} t 
+      JOIN ${this.I} i ON t.item_nbr = i.item_nbr
+      GROUP BY i.family 
+      ORDER BY totalSales DESC 
+      LIMIT ${l}
     `);
     return r.map(row => CategoryStatEntity.fromDatabricks(row as any));
   }
@@ -148,10 +181,16 @@ export class DatabricksRepository implements IStatsRepository {
   async getStoreStats(limit?: number): Promise<StoreStatEntity[]> {
     const l = this.safeLimit(limit);
     const r = await this.executeQuery<Record<string, unknown>>(`
-      SELECT s.type_magasin,s.ville,COALESCE(SUM(t.ventes),0) as totalSales,
-        COUNT(DISTINCT s.store_id) as storeCount
-      FROM ${this.T} t JOIN ${this.S} s ON t.store_id=s.store_id
-      GROUP BY s.type_magasin,s.ville ORDER BY totalSales DESC LIMIT ${l}
+      SELECT 
+        s.type as type_magasin,
+        s.city as ville,
+        COALESCE(SUM(CAST(t.unit_sales AS DOUBLE)), 0) as totalSales,
+        COUNT(DISTINCT s.store_nbr) as storeCount
+      FROM ${this.T} t 
+      JOIN ${this.S} s ON t.store_nbr = s.store_nbr
+      GROUP BY s.type, s.city 
+      ORDER BY totalSales DESC 
+      LIMIT ${l}
     `);
     return r.map(row => StoreStatEntity.fromDatabricks(row as any));
   }
