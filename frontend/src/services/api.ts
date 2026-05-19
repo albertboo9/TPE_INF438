@@ -62,7 +62,11 @@ class ApiClient {
       }
     }
 
-    return response.json();
+    const json = await response.json();
+    if (json && typeof json === 'object' && 'data' in json) {
+      return json.data;
+    }
+    return json;
   }
 
   // --- AUTHENTICATION ENDPOINTS ---
