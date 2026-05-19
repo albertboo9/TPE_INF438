@@ -1,4 +1,4 @@
- import {
+import {
   Controller,
   Get,
   Query,
@@ -27,7 +27,7 @@ export class StatsController {
     private readonly storeStatsUseCase: StoreStatsUseCase,
     @Inject(IStatsRepository)
     private readonly databricksRepo: IStatsRepository & { discoverTables?(): Promise<string[]> },
-  ) {}
+  ) { }
 
   @Get('global')
   @UseGuards(JwtAuthGuard)
