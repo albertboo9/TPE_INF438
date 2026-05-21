@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import Button from "../../components/ui/Button";
 import AuthBackground from "../../components/background/AuthBackground";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
