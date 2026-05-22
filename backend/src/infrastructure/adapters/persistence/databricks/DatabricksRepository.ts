@@ -15,6 +15,9 @@ export class DatabricksRepository implements IStatsRepository {
   private readonly MAX_RETRIES = 3;
   private readonly RETRY_DELAY_MS = 1000;
 
+  /** Indicates whether the Databricks connection was successful */
+  public isConnected = false;
+
   private readonly T: string; // train table
   private readonly I: string; // items table
   private readonly S: string; // stores table
@@ -32,7 +35,15 @@ export class DatabricksRepository implements IStatsRepository {
   }
 
   async onModuleInit() {
-    await this.connect();
+    try {
+      await this.connect();
+      this.isConnected = true;
+      this.logger.log('✅ Databricks SQL Warehouse connected');
+    } catch (error) {
+      this.isConnected = false;
+      this.logger.warn('⚠️ Databricks unavailable — system will use mock data fallback');
+      // Do NOT throw — the app continues without crashing
+    }
   }
 
   async onModuleDestroy() {

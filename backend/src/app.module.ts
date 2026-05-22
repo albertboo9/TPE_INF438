@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -18,6 +18,7 @@ import { AuthService } from './application/use-cases/AuthService';
 
 // Infrastructure
 import { DatabricksRepository } from './infrastructure/adapters/persistence/databricks/DatabricksRepository';
+import { MockDatabricksRepository } from './infrastructure/adapters/persistence/databricks/MockDatabricksRepository';
 import { JwtStrategy } from './infrastructure/adapters/security/JwtStrategy';
 import { CacheConfigModule } from './cache/cache.module';
 
@@ -31,6 +32,31 @@ import { AnalyticsController } from './presentation/controllers/AnalyticsControl
 // Presentation - Filters & Interceptors
 import { GlobalExceptionFilter } from './presentation/filters/GlobalExceptionFilter';
 import { ResponseInterceptor } from './presentation/interceptors/ResponseInterceptor';
+
+/**
+ * Factory provider that tries Databricks first.
+ * If Databricks is unavailable (quota, network, credentials), 
+ * it automatically falls back to Mock data so the app never crashes on startup.
+ */
+const repositoryProvider: Provider = {
+  provide: IStatsRepository,
+  useFactory: async () => {
+    const databricks = new DatabricksRepository();
+    // Attempt connection — onModuleInit is called by NestJS lifecycle,
+    // but we pre-connect here to decide which provider to use
+    try {
+      await databricks.onModuleInit();
+      if (databricks.isConnected) {
+        console.log('🔌 Using Databricks SQL Warehouse (live data)');
+        return databricks;
+      }
+    } catch {
+      // Connection failed, fall through to mock
+    }
+    console.log('📦 Using MockDatabricksRepository (demo/fallback data)');
+    return new MockDatabricksRepository();
+  },
+};
 
 @Module({
   imports: [
@@ -51,8 +77,8 @@ import { ResponseInterceptor } from './presentation/interceptors/ResponseInterce
     AnalyticsController,
   ],
   providers: [
-    // Repository binding
-    { provide: IStatsRepository, useClass: DatabricksRepository },
+    // Repository binding with automatic fallback
+    repositoryProvider,
     // Use case bindings
     { provide: GlobalStatsUseCase, useClass: GetGlobalStatsUseCaseImpl },
     { provide: TemporalStatsUseCase, useClass: GetTemporalStatsUseCaseImpl },
@@ -67,4 +93,10 @@ import { ResponseInterceptor } from './presentation/interceptors/ResponseInterce
     AuthService,
   ],
 })
-export class AppModule {}
+export class AppModule {
+  constructor() {
+    // Log the startup mode
+    const mode = process.env.NODE_ENV || 'development';
+    console.log(`🚀 RetailSense Backend starting in ${mode} mode`);
+  }
+}
