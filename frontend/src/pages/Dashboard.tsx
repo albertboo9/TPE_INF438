@@ -98,16 +98,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ filters }) => {
       if (isMlConnected) {
         // Direct call to active Databricks pipeline
         const response = await apiClient.predictSales({
-          magasin_vec: Number(magasinVec),
-          saison_vec: Number(saisonVec),
+          magasin_index: 3,
+          famille_index: 1,
+          saison_index: Number(saisonVec),
           ventes_veille: Number(ventesVeille),
           moyenne_ventes_7j: Number(moyenneVentes7j),
           est_weekend: Number(estWeekend),
           est_jour_ferie: Number(estJourFerie),
           indicateur_promotion: Number(indicateurPromotion),
           prix_petrole: Number(prixPetrole),
+          nb_transactions: 100,
+          ventes_veille_produit: 10,
+          moyenne_7j_produit: 10,
+          est_perissable: 0,
         });
-        setSimulatedSales(response.prediction_transactions);
+        setSimulatedSales(response.prediction);
       } else {
         // Pre-deployment fallback engine
         setTimeout(() => {

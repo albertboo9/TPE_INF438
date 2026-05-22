@@ -1,4 +1,4 @@
-import { GlobalStats, TemporalData, CategoryStat, StoreStat } from '../types';
+import { GlobalStats, TemporalData, CategoryStat, StoreStat, PredictRequest, PredictResponse } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -119,7 +119,7 @@ class ApiClient {
   }
 
   async salesByDayOfWeek(filters?: AnalyticsFilters): Promise<any[]> {
-    return this.fetcher<any[]>(`/analytics/sales-by-day${this.buildQueryString(filters)}`);
+    return this.fetcher<any[]>(`/analytics/sales-by-dayofweek${this.buildQueryString(filters)}`);
   }
 
   async salesByMonth(filters?: AnalyticsFilters): Promise<any[]> {
@@ -174,17 +174,8 @@ class ApiClient {
     return this.fetcher<any>(`/analytics/full-dashboard${this.buildQueryString(filters)}`);
   }
 
-  // --- PREDICTIVE ML ENDPOINT ---
-  async predictSales(data: {
-    magasin_vec: number;
-    saison_vec: number;
-    ventes_veille: number;
-    moyenne_ventes_7j: number;
-    est_weekend: number;
-    est_jour_ferie: number;
-    indicateur_promotion: number;
-    prix_petrole: number;
-  }): Promise<{ status: string; prediction_transactions: number; source?: string }> {
+  // --- PREDICTIVE ML ENDPOINT (Random Forest 13 features) ---
+  async predictSales(data: PredictRequest): Promise<PredictResponse> {
     const token = localStorage.getItem('accessToken');
     const headers = new Headers();
     headers.set('Content-Type', 'application/json');
@@ -199,10 +190,16 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Prediction API Error: ${response.statusText}`);
+      const errorText = await response.text();
+      throw new Error(`Prediction API Error: ${response.statusText} - ${errorText}`);
     }
 
     return response.json();
+  }
+
+  // --- MODEL INFO ENDPOINT ---
+  async getModelInfo(): Promise<any> {
+    return this.fetcher<any>('/predict/model-info');
   }
 }
 

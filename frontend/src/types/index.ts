@@ -39,3 +39,26 @@ export interface ApiResponse<T> {
   data: T;
   error?: string;
 }
+
+export interface PredictRequest {
+  magasin_index: number;
+  famille_index: number;
+  saison_index: number;
+  ventes_veille: number;
+  moyenne_ventes_7j: number;
+  est_weekend?: number;
+  est_jour_ferie?: number;
+  indicateur_promotion: number;
+  prix_petrole: number;
+  nb_transactions: number;
+  ventes_veille_produit: number;
+  moyenne_7j_produit: number;
+  est_perissable?: number;
+}
+
+export interface PredictResponse {
+  status: string;
+  prediction: number;
+  model: string;
+  source: string;
+}

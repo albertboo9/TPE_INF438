@@ -1,345 +1,387 @@
 import React, { useState, useEffect } from 'react';
+import { 
+  TrendingUp, 
+  ShoppingBag, 
+  Calendar, 
+  CalendarDays, 
+  Megaphone, 
+  Droplets, 
+  Store, 
+  Tag, 
+  Sun, 
+  History, 
+  BarChart3, 
+  Package, 
+  TimerReset, 
+  LucideIcon,
+  AlertCircle
+} from 'lucide-react';
 import { GlassCard } from '../components/layout/GlassCard';
-import { SkeletonLoader } from '../components/ui/SkeletonLoader';
 import { apiClient, AnalyticsFilters } from '../services/api';
-import { useInventoryInsights } from '../hooks/useAnalytics';
+import { PredictResponse } from '../types';
 
 interface PredictionsProps {
   filters: AnalyticsFilters;
 }
 
+interface SliderField {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  min: number;
+  max: number;
+  step: number;
+  unit: string;
+  value: number;
+  setter: (v: number) => void;
+}
+
+interface ToggleField {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  value: number;
+  setter: (v: number) => void;
+}
+
+interface SelectField {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  options: { value: number; label: string }[];
+  value: number;
+  setter: (v: number) => void;
+}
+
 export const Predictions: React.FC<PredictionsProps> = ({ filters }) => {
-  // 8 ML variables State
-  const [magasinVec, setMagasinVec] = useState<number>(3);
-  const [saisonVec, setSaisonVec] = useState<number>(0.2);
-  const [ventesVeille, setVentesVeille] = useState<number>(1450);
-  const [moyenneVentes7j, setMoyenneVentes7j] = useState<number>(1480);
+  // === 13 Features du Modèle ===
+  const [magasinIndex, setMagasinIndex] = useState<number>(3);
+  const [familleIndex, setFamilleIndex] = useState<number>(1);
+  const [saisonIndex, setSaisonIndex] = useState<number>(1);
+  const [ventesVeille, setVentesVeille] = useState<number>(300);
+  const [moyenneVentes7j, setMoyenneVentes7j] = useState<number>(300);
   const [estWeekend, setEstWeekend] = useState<number>(0);
   const [estJourFerie, setEstJourFerie] = useState<number>(0);
-  const [indicateurPromotion, setIndicateurPromotion] = useState<number>(1);
-  const [prixPetrole, setPrixPetrole] = useState<number>(75.4);
+  const [indicateurPromotion, setIndicateurPromotion] = useState<number>(0);
+  const [prixPetrole, setPrixPetrole] = useState<number>(75);
+  const [nbTransactions, setNbTransactions] = useState<number>(100);
+  const [ventesVeilleProduit, setVentesVeilleProduit] = useState<number>(10);
+  const [moyenne7jProduit, setMoyenne7jProduit] = useState<number>(10);
+  const [estPerissable, setEstPerissable] = useState<number>(0);
 
-  const [predictedSales, setPredictedSales] = useState<number | null>(null);
+  const [prediction, setPrediction] = useState<PredictResponse | null>(null);
   const [isPredicting, setIsPredicting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [predictionSource, setPredictionSource] = useState<string>('ML Engine');
 
-  // Fetch Inventory/Safety stock insights from Databricks using global filters
-  const { data: inventoryData = [], isLoading: isInventoryLoading } = useInventoryInsights(filters);
+  // Champs slider
+  const sliders: SliderField[] = [
+    { id: 'ventes_veille', label: 'Ventes Hier (Total)', icon: History, min: 0, max: 8000, step: 50, unit: 'unités', value: ventesVeille, setter: setVentesVeille },
+    { id: 'moyenne_7j', label: 'Moyenne 7 Jours (Total)', icon: BarChart3, min: 0, max: 8000, step: 50, unit: 'unités', value: moyenneVentes7j, setter: setMoyenneVentes7j },
+    { id: 'ventes_produit', label: 'Ventes Produit Hier', icon: Package, min: 0, max: 500, step: 1, unit: 'unités', value: ventesVeilleProduit, setter: setVentesVeilleProduit },
+    { id: 'moyenne_produit', label: 'Moyenne Produit 7j', icon: TimerReset, min: 0, max: 500, step: 1, unit: 'unités', value: moyenne7jProduit, setter: setMoyenne7jProduit },
+    { id: 'transactions', label: 'Transactions', icon: ShoppingBag, min: 0, max: 500, step: 5, unit: 'tx', value: nbTransactions, setter: setNbTransactions },
+    { id: 'petrole', label: 'Prix du Pétrole', icon: Droplets, min: 10, max: 140, step: 0.5, unit: '$/bbl', value: prixPetrole, setter: setPrixPetrole },
+  ];
 
-  // Debounced forecast computation triggered by variable adjustments
+  // Champs toggle
+  const toggles: ToggleField[] = [
+    { id: 'promo', label: 'Promotion Active', icon: Megaphone, value: indicateurPromotion, setter: setIndicateurPromotion },
+    { id: 'weekend', label: 'Week-end', icon: CalendarDays, value: estWeekend, setter: setEstWeekend },
+    { id: 'ferie', label: 'Jour Férié', icon: Calendar, value: estJourFerie, setter: setEstJourFerie },
+    { id: 'perissable', label: 'Produit Périssable', icon: AlertCircle, value: estPerissable, setter: setEstPerissable },
+  ];
+
+  // Champs select
+  const selects: SelectField[] = [
+    {
+      id: 'magasin', label: 'Magasin', icon: Store,
+      options: [
+        { value: 1, label: 'Magasin #1 - Centre' }, { value: 2, label: 'Magasin #2 - Nord' },
+        { value: 3, label: 'Magasin #3 - Sud' }, { value: 4, label: 'Magasin #4 - Est' },
+        { value: 5, label: 'Magasin #5 - Ouest' },
+      ],
+      value: magasinIndex, setter: setMagasinIndex,
+    },
+    {
+      id: 'famille', label: 'Famille Produit', icon: Tag,
+      options: [
+        { value: 1, label: '🐟 Poissonnerie' }, { value: 2, label: '🥩 Boucherie' },
+        { value: 3, label: '🥦 Fruits & Légumes' }, { value: 4, label: '🥛 Produits Laitiers' },
+        { value: 5, label: '🍞 Boulangerie' }, { value: 6, label: '🥤 Boissons' },
+        { value: 7, label: '🧹 Entretien' }, { value: 8, label: '🍝 Épicerie' },
+      ],
+      value: familleIndex, setter: setFamilleIndex,
+    },
+    {
+      id: 'saison', label: 'Saison', icon: Sun,
+      options: [
+        { value: 1, label: '🌱 Printemps (Mars-Mai)' },
+        { value: 2, label: '☀️ Été (Juin-Août)' },
+        { value: 3, label: '🍂 Automne (Sept-Nov)' },
+        { value: 4, label: '❄️ Hiver (Déc-Fév)' },
+      ],
+      value: saisonIndex, setter: setSaisonIndex,
+    },
+  ];
+
+  // Prediction automatique avec debounce
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
-      triggerForecast();
+      triggerPrediction();
     }, 400);
-
     return () => clearTimeout(delayDebounce);
-  }, [magasinVec, saisonVec, ventesVeille, moyenneVentes7j, estWeekend, estJourFerie, indicateurPromotion, prixPetrole]);
+  }, [
+    magasinIndex, familleIndex, saisonIndex,
+    ventesVeille, moyenneVentes7j,
+    estWeekend, estJourFerie, indicateurPromotion,
+    prixPetrole, nbTransactions,
+    ventesVeilleProduit, moyenne7jProduit, estPerissable
+  ]);
 
-  const triggerForecast = async () => {
+  const triggerPrediction = async () => {
     setIsPredicting(true);
     setError(null);
     try {
       const response = await apiClient.predictSales({
-        magasin_vec: Number(magasinVec),
-        saison_vec: Number(saisonVec),
+        magasin_index: Number(magasinIndex),
+        famille_index: Number(familleIndex),
+        saison_index: Number(saisonIndex),
         ventes_veille: Number(ventesVeille),
         moyenne_ventes_7j: Number(moyenneVentes7j),
-        est_weekend: Number(estWeekend),
-        est_jour_ferie: Number(estJourFerie),
+        est_weekend: Number(estWeekend) || 0,
+        est_jour_ferie: Number(estJourFerie) || 0,
         indicateur_promotion: Number(indicateurPromotion),
         prix_petrole: Number(prixPetrole),
+        nb_transactions: Number(nbTransactions),
+        ventes_veille_produit: Number(ventesVeilleProduit),
+        moyenne_7j_produit: Number(moyenne7jProduit),
+        est_perissable: Number(estPerissable) || 0,
       });
-      setPredictedSales(response.prediction_transactions);
-      setPredictionSource(response.source === 'fallback' ? 'Simulation Engine' : 'Databricks ML API');
+      setPrediction(response);
     } catch (err) {
-      setError("Moteur prédictif injoignable. Passage en mode simulation locale.");
-      setPredictedSales((ventesVeille * 0.4 + moyenneVentes7j * 0.6) * (1 + (indicateurPromotion * 0.15)) * (1 - (estWeekend * 0.05)));
-      setPredictionSource('Simulation Engine');
+      setError(err instanceof Error ? err.message : 'Erreur de prédiction');
     } finally {
       setIsPredicting(false);
     }
   };
 
+  const getConfidenceColor = (pred?: number) => {
+    if (!pred) return 'text-gray-400';
+    if (pred > 30) return 'text-emerald-500';
+    if (pred > 10) return 'text-amber-500';
+    return 'text-rose-500';
+  };
+
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Page Title & Active Status */}
+      {/* Header */}
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <span className="font-label-caps text-primary tracking-widest text-[10px] uppercase font-bold block mb-1">
-            Predictive Volatility Cockpit
+          <span className="text-xs font-bold text-primary tracking-[0.2em] uppercase block mb-1 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" />
+            Intelligence Prédictive
           </span>
-          <h2 className="font-h1 text-on-background text-3xl font-black tracking-tight">AI Forecasting & Safety Stock</h2>
+          <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+            Prévision des Ventes
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Modèle Random Forest • 13 features • Prédiction produit
+          </p>
         </div>
-        
         <div className="flex gap-2 self-end sm:self-auto">
-          <div className="bg-primary/10 border border-primary/20 px-3.5 py-1.5 rounded-xl flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-            <span className="font-mono-data text-[10px] font-bold text-primary uppercase">Model RF-8-Features</span>
+          <div className="bg-primary/10 border border-primary/20 px-4 py-2 rounded-xl flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
+              {prediction?.source === 'ml_model' ? 'Modèle Cloud' : 'Mode Local'}
+            </span>
           </div>
         </div>
       </header>
 
-      {/* Main Grid: ML inputs sliders & results indicator */}
+      {/* Grille principale */}
       <section className="grid grid-cols-12 gap-6">
-        {/* Left Side: Parameters sliders dashboard */}
-        <GlassCard className="col-span-12 lg:col-span-7 p-6 flex flex-col gap-6 border-t-4 border-primary">
-          <div>
-            <h3 className="font-h2 text-on-surface text-md font-bold mb-1 flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">tune</span>
-              Variables d'Entrée du Modèle
+        {/* Colonne de gauche : Paramètres */}
+        <div className="col-span-12 lg:col-span-8 space-y-6">
+          {/* Selects (Magasin, Famille, Saison) */}
+          <GlassCard className="p-5 border-t-2 border-primary/40">
+            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-primary" />
+              Segmentation
             </h3>
-            <p className="text-xs text-on-surface-variant">Ajustez les 8 variables de features pour tester les ventes de demain.</p>
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {selects.map((s) => (
+                <div key={s.id} className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                    <s.icon className="w-3.5 h-3.5 text-primary" />
+                    {s.label}
+                  </label>
+                  <select
+                    value={s.value}
+                    onChange={(e) => s.setter(Number(e.target.value))}
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm font-medium"
+                  >
+                    {s.options.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Ventes veille */}
-            <div className="flex flex-col gap-2">
-              <div className="flex justify-between items-center text-xs font-semibold">
-                <span className="text-on-surface">Ventes de la Veille</span>
-                <span className="font-mono-data text-primary font-bold bg-primary/5 px-2 py-0.5 rounded">{ventesVeille.toLocaleString()} units</span>
+          {/* Sliders */}
+          <GlassCard className="p-5 border-t-2 border-primary/40">
+            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+              <History className="w-4 h-4 text-primary" />
+              Données Historiques
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {sliders.map((s) => (
+                <div key={s.id} className="flex flex-col gap-1.5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-medium text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                      <s.icon className="w-3.5 h-3.5 text-primary/70" />
+                      {s.label}
+                    </label>
+                    <span className="text-xs font-bold font-mono text-primary bg-primary/5 px-2 py-0.5 rounded">
+                      {s.value.toLocaleString()} {s.unit}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={s.min}
+                    max={s.max}
+                    step={s.step}
+                    value={s.value}
+                    onChange={(e) => s.setter(Number(e.target.value))}
+                    className="w-full accent-primary bg-gray-100 dark:bg-gray-700 rounded-lg appearance-none h-1.5 cursor-pointer"
+                  />
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+        </div>
+
+        {/* Colonne de droite : Résultat de la prédiction */}
+        <div className="col-span-12 lg:col-span-4">
+          <GlassCard className="p-6 h-full flex flex-col border-t-2 border-emerald-500 relative">
+            {isPredicting && (
+              <div className="absolute inset-0 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-10 rounded-[24px]">
+                <div className="w-10 h-10 rounded-full border-3 border-emerald-500 border-t-transparent animate-spin"></div>
+                <span className="text-xs font-bold text-emerald-600">Calcul en cours...</span>
               </div>
-              <input 
-                type="range" min="0" max="8000" step="50" 
-                value={ventesVeille} 
-                onChange={(e) => setVentesVeille(Number(e.target.value))}
-                className="w-full accent-primary bg-surface-container-high rounded-lg appearance-none h-1.5 cursor-pointer"
-              />
-            </div>
-
-            {/* Moyenne 7 jours */}
-            <div className="flex flex-col gap-2">
-              <div className="flex justify-between items-center text-xs font-semibold">
-                <span className="text-on-surface">Moyenne 7 Jours</span>
-                <span className="font-mono-data text-primary font-bold bg-primary/5 px-2 py-0.5 rounded">{moyenneVentes7j.toLocaleString()} units</span>
-              </div>
-              <input 
-                type="range" min="0" max="8000" step="50" 
-                value={moyenneVentes7j} 
-                onChange={(e) => setMoyenneVentes7j(Number(e.target.value))}
-                className="w-full accent-primary bg-surface-container-high rounded-lg appearance-none h-1.5 cursor-pointer"
-              />
-            </div>
-
-            {/* Prix pétrole */}
-            <div className="flex flex-col gap-2">
-              <div className="flex justify-between items-center text-xs font-semibold">
-                <span className="text-on-surface">Prix du Pétrole</span>
-                <span className="font-mono-data text-primary font-bold bg-primary/5 px-2 py-0.5 rounded">${prixPetrole.toFixed(1)} /bbl</span>
-              </div>
-              <input 
-                type="range" min="10" max="140" step="0.5" 
-                value={prixPetrole} 
-                onChange={(e) => setPrixPetrole(Number(e.target.value))}
-                className="w-full accent-primary bg-surface-container-high rounded-lg appearance-none h-1.5 cursor-pointer"
-              />
-            </div>
-
-            {/* Magasin category */}
-            <div className="flex flex-col gap-2">
-              <span className="text-xs font-semibold text-on-surface">Type de Magasin</span>
-              <select 
-                value={magasinVec} 
-                onChange={(e) => setMagasinVec(Number(e.target.value))}
-                className="w-full bg-surface-container-low border border-border dark:border-[#2b2735] text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:border-primary text-xs font-semibold"
-              >
-                <option value="3">Hypermarché Régional (Type A)</option>
-                <option value="1">Supermarché de Quartier (Type B)</option>
-                <option value="2">Proximité Urbain (Type C)</option>
-                <option value="4">Grande Surface Alimentaire (Type D)</option>
-              </select>
-            </div>
-
-            {/* Saison selector */}
-            <div className="flex flex-col gap-2">
-              <span className="text-xs font-semibold text-on-surface">Saisonnalité Calendrier</span>
-              <select 
-                value={saisonVec} 
-                onChange={(e) => setSaisonVec(Number(e.target.value))}
-                className="w-full bg-surface-container-low border border-border dark:border-[#2b2735] text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:border-primary text-xs font-semibold"
-              >
-                <option value="0.2">Standard / Hors-saison (0.2)</option>
-                <option value="0.1">Période Creuse / Pluie (0.1)</option>
-                <option value="0.6">Rentrée Scolaire (0.6)</option>
-                <option value="0.9">Festivités Fin d'Année (0.9)</option>
-              </select>
-            </div>
-
-            {/* Switches */}
-            <div className="grid grid-cols-3 gap-2 mt-4 md:col-span-2">
-              <button 
-                onClick={() => setIndicateurPromotion(indicateurPromotion === 1 ? 0 : 1)}
-                className={`py-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all duration-200 active:scale-95 ${
-                  indicateurPromotion === 1 
-                    ? 'border-primary/50 bg-primary/10 text-primary font-bold shadow-sm' 
-                    : 'border-border dark:border-[#2b2735] bg-surface-container-low text-on-surface-variant'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[20px]">campaign</span>
-                <span className="text-[10px]">Promo</span>
-              </button>
-
-              <button 
-                onClick={() => setEstWeekend(estWeekend === 1 ? 0 : 1)}
-                className={`py-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all duration-200 active:scale-95 ${
-                  estWeekend === 1 
-                    ? 'border-primary/50 bg-primary/10 text-primary font-bold shadow-sm' 
-                    : 'border-border dark:border-[#2b2735] bg-surface-container-low text-on-surface-variant'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[20px]">calendar_today</span>
-                <span className="text-[10px]">Weekend</span>
-              </button>
-
-              <button 
-                onClick={() => setEstJourFerie(estJourFerie === 1 ? 0 : 1)}
-                className={`py-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all duration-200 active:scale-95 ${
-                  estJourFerie === 1 
-                    ? 'border-primary/50 bg-primary/10 text-primary font-bold shadow-sm' 
-                    : 'border-border dark:border-[#2b2735] bg-surface-container-low text-on-surface-variant'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[20px]">event_busy</span>
-                <span className="text-[10px]">Férié</span>
-              </button>
-            </div>
-          </div>
-        </GlassCard>
-
-        {/* Right Side: Prediction results glowing cockpit */}
-        <GlassCard className="col-span-12 lg:col-span-5 p-6 flex flex-col justify-between border-t-4 border-emerald-ai min-h-[420px]">
-          {isPredicting && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-15 rounded-[24px]">
-              <div className="w-8 h-8 rounded-full border-3 border-emerald-ai border-t-transparent animate-spin"></div>
-              <span className="text-xs font-semibold text-emerald-ai">Computing forecast...</span>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="font-label-caps text-outline text-[10px] uppercase font-bold tracking-widest">Calculated forecast</span>
-              <div className="bg-emerald-ai/10 border border-emerald-ai/20 text-emerald-ai px-3 py-1 rounded-full text-[10px] font-black tracking-tight flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px]">verified</span>
-                APPROVED MODEL
-              </div>
-            </div>
-
-            {/* Glowing Big Forecast output */}
-            <div className="text-center py-6">
-              <span className="font-label-caps text-on-surface-variant text-[10px] font-bold block mb-1 uppercase">ESTIMATED TRANSACTION UNITS</span>
-              <div className="flex justify-center items-baseline gap-1">
-                <h2 className="font-display text-5xl lg:text-6xl font-black text-on-background tracking-tight bg-gradient-to-r from-emerald-ai to-teal-400 bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(16,185,129,0.1)]">
-                  {predictedSales !== null ? Math.round(predictedSales).toLocaleString('fr-FR') : '---'}
-                </h2>
-                <span className="text-sm font-bold text-on-surface-variant">units</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Forecast Volatility Insights list */}
-          <div className="space-y-3 border-t border-border dark:border-[#2b2735] pt-4">
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-on-surface-variant font-medium">Simulation Core</span>
-              <span className="font-bold bg-surface-container border border-border dark:border-[#2b2735] px-2.5 py-0.5 rounded text-[10px] text-on-surface">
-                {predictionSource}
-              </span>
-            </div>
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-on-surface-variant font-medium">Modèle R² Score</span>
-              <span className="font-mono-data font-bold text-emerald-ai">0.94 / 1.00</span>
-            </div>
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-on-surface-variant font-medium">Databricks Compute Nodes</span>
-              <span className="text-emerald-ai font-bold flex items-center gap-1 text-[11px]">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-ai animate-pulse"></span>
-                Operational
-              </span>
-            </div>
-          </div>
-        </GlassCard>
-      </section>
-
-      {/* Bento Row 2: Live Safety Stock logistical action grid */}
-      <section className="grid grid-cols-12 gap-6" id="tour-logistics">
-        <GlassCard className="col-span-12 p-6 flex flex-col gap-6">
-          <div>
-            <h3 className="font-h2 text-on-surface text-lg font-bold">Safety Stock & Demand Volatility</h3>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              Calcul du stock de sécurité recommandé pour éviter la rupture sur les 80M de lignes.
-            </p>
-          </div>
-
-          <div className="overflow-x-auto">
-            {isInventoryLoading ? (
-              <SkeletonLoader type="list" className="w-full h-44" />
-            ) : inventoryData.length === 0 ? (
-              <p className="text-xs text-outline text-center py-8 uppercase font-label-caps">No logistical inventory metrics found</p>
-            ) : (
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="text-outline uppercase text-[10px] tracking-wider border-b border-border dark:border-[#2b2735] pb-2 font-bold">
-                    <th className="py-2">SKU Item</th>
-                    <th className="py-2">Category</th>
-                    <th className="py-2 text-right">Avg Unit Sales</th>
-                    <th className="py-2 text-right">Demand Volatility (StdDev)</th>
-                    <th className="py-2 text-right">Calculated Safety Stock</th>
-                    <th className="py-2 text-right">Reorder Threshold</th>
-                    <th className="py-2 text-center">Alert Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/30 dark:divide-[#2b2735]/30">
-                  {inventoryData.slice(0, 5).map((sku: any, index: number) => {
-                    const volatility = Number(sku.salesVariance || 120);
-                    const isHighRisk = volatility > 250;
-                    return (
-                      <tr key={index} className="hover:bg-primary/5 transition-colors">
-                        <td className="py-3 font-mono-data text-primary font-bold">#IT-{sku.item_nbr || (2000 + index)}</td>
-                        <td className="py-3 font-bold text-on-surface">{sku.family || 'Produce'}</td>
-                        <td className="py-3 text-right font-mono-data">
-                          {Number(sku.averageSales || 1420).toFixed(0)}
-                        </td>
-                        <td className="py-3 text-right font-mono-data font-bold">
-                          {volatility.toFixed(1)}
-                        </td>
-                        <td className="py-3 text-right font-mono-data text-primary font-bold">
-                          {Number(sku.safetyStock || 380).toFixed(0)}
-                        </td>
-                        <td className="py-3 text-right font-mono-data font-bold text-[#C9A74D]">
-                          {Number(sku.reorderPoint || 850).toFixed(0)}
-                        </td>
-                        <td className="py-3 text-center">
-                          <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold ${
-                            isHighRisk 
-                              ? 'bg-error/10 text-error' 
-                              : 'bg-emerald-ai/10 text-emerald-ai'
-                          }`}>
-                            {isHighRisk ? 'VOLATILE SURGE' : 'SAFE'}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
             )}
+
+            <div className="flex-1 flex flex-col justify-center items-center text-center py-6">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-2">
+                Prédiction du Modèle
+              </span>
+              
+              <div className="relative mb-4">
+                <div className="text-6xl md:text-7xl font-black tracking-tight bg-gradient-to-br from-emerald-500 via-emerald-400 to-teal-500 bg-clip-text text-transparent drop-shadow-[0_4px_20px_rgba(16,185,129,0.15)]">
+                  {prediction !== null ? Math.round(prediction.prediction).toLocaleString('fr-FR') : '---'}
+                </div>
+                <span className="text-sm font-bold text-gray-400 dark:text-gray-500 mt-1 block">
+                  unités estimées
+                </span>
+              </div>
+
+              {/* Barre de confiance */}
+              <div className="w-full max-w-[200px] mb-4">
+                <div className="flex justify-between text-[10px] text-gray-400 mb-1">
+                  <span>Faible</span>
+                  <span className="font-bold" style={{ color: prediction ? (prediction.prediction > 30 ? '#10b981' : prediction.prediction > 10 ? '#f59e0b' : '#f43f5e') : '#9ca3af' }}>
+                    {prediction ? `${prediction.source === 'ml_model' ? 'Haute' : 'Moyenne'}` : '--'}
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      prediction?.source === 'ml_model' ? 'bg-emerald-500' : 'bg-amber-500'
+                    }`}
+                    style={{ width: prediction ? `${Math.min(100, (prediction.prediction / 50) * 100)}%` : '0%' }}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2 w-full max-w-[200px]">
+                <div className="flex justify-between items-center text-[11px]">
+                  <span className="text-gray-500">Source</span>
+                  <span className={`font-bold ${prediction?.source === 'ml_model' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    {prediction?.source === 'ml_model' ? '☁️ Cloud IA' : '⚙️ Simulation'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-[11px]">
+                  <span className="text-gray-500">Modèle</span>
+                  <span className="font-bold text-gray-700 dark:text-gray-300">RF-13F</span>
+                </div>
+                <div className="flex justify-between items-center text-[11px]">
+                  <span className="text-gray-500">Statut</span>
+                  <span className={`font-bold flex items-center gap-1 ${prediction?.status === 'success' ? 'text-emerald-600' : 'text-gray-400'}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${prediction?.status === 'success' ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                    {prediction?.status === 'success' ? 'Actif' : 'Inactif'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {error && (
+              <div className="mt-3 p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-lg">
+                <p className="text-[11px] text-rose-700 dark:text-rose-300 flex items-start gap-2">
+                  <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                  {error}
+                </p>
+              </div>
+            )}
+          </GlassCard>
+        </div>
+      </section>
+
+      {/* Toggles */}
+      <section className="grid grid-cols-12 gap-6">
+        <GlassCard className="col-span-12 p-5 border-t-2 border-primary/40">
+          <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-primary" />
+            Facteurs Contextuels
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {toggles.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => t.setter(t.value === 1 ? 0 : 1)}
+                className={`p-4 rounded-xl border-2 transition-all duration-200 active:scale-95 flex flex-col items-center justify-center gap-2 ${
+                  t.value === 1
+                    ? 'border-primary/60 bg-primary/10 text-primary shadow-sm shadow-primary/10'
+                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
+                }`}
+              >
+                <t.icon className={`w-5 h-5 ${t.value === 1 ? 'text-primary' : ''}`} />
+                <span className="text-[11px] font-bold">{t.label}</span>
+                <span className={`text-[10px] font-mono font-bold ${t.value === 1 ? 'text-primary' : 'text-gray-400'}`}>
+                  {t.value === 1 ? 'ACTIF' : 'INACTIF'}
+                </span>
+              </button>
+            ))}
           </div>
         </GlassCard>
       </section>
 
-      {/* Technical Data Lineage explanation card */}
+      {/* Carte d'explication du modèle */}
       <section className="grid grid-cols-12 gap-6">
-        <GlassCard className="col-span-12 p-6 flex flex-col md:flex-row items-center justify-between gap-6 bg-surface-container-low/20">
+        <GlassCard className="col-span-12 p-5 bg-gradient-to-r from-primary/5 via-transparent to-transparent">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-primary">analytics</span>
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <TrendingUp className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h4 className="font-display font-bold text-on-background text-sm mb-1 flex items-center gap-2">
-                <span>Big Data Pipeline Architectural Diagram</span>
-                <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-[9px] font-black tracking-widest uppercase">Delta Catalog</span>
+              <h4 className="font-bold text-sm text-gray-800 dark:text-gray-200 mb-1">
+                À propos du Modèle
               </h4>
-              <p className="text-xs text-on-surface-variant max-w-4xl leading-relaxed">
-                Les prévisions IA et analyses logistiques s'appuient sur un pipeline de traitement incremental. Les CSV bruts du volume Databricks <code className="bg-surface-container font-mono text-primary px-1 py-0.5 rounded text-[11px]">/Volumes/workspace/default/tp_inf438_volume</code> sont nettoyés via PySpark et structurés en format Delta Lake. L'indexation par **Z-Order** sur le magasin et la date optimise les requêtes sur notre entrepôt SQL Serverless, garantissant des temps de réponse inférieurs à 1.5 seconde.
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                Ce modèle <strong className="text-gray-700 dark:text-gray-300">Random Forest</strong> prédit les ventes d'un produit spécifique 
+                pour le lendemain. Il utilise <strong>13 features</strong> incluant l'historique du produit (ventes veille, moyenne 7j), 
+                le contexte saisonnier, les promotions, et des facteurs macroéconomiques (prix du pétrole). 
+                La valeur retournée représente le nombre d'unités estimées.
               </p>
             </div>
           </div>
