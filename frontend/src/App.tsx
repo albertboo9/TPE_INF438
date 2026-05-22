@@ -60,7 +60,7 @@ const AppContent: React.FC = () => {
       {/* Dynamic Header */}
       <Header 
         currentPage={currentPage}
-        onOpenFilters={() => setIsMobileFiltersOpen(true)}
+        // onOpenFilters={() => setIsMobileFiltersOpen(true)}
       />
 
       {/* Desktop Left Sidebar (Only visible on screens >= LG) */}
@@ -68,8 +68,8 @@ const AppContent: React.FC = () => {
         className="hidden lg:flex"
         currentPage={currentPage}
         onNavigate={setCurrentPage}
-        filters={filters}
-        onFilterChange={handleFilterChange}
+        // filters={filters}
+        // onFilterChange={handleFilterChange}
       />
 
       {/* Dynamic Mobile Bottom Navigation (Only visible on screens < LG) */}
@@ -90,7 +90,7 @@ const AppContent: React.FC = () => {
 
       {/* Responsive Content Shell */}
       <div className="lg:pl-72 transition-all duration-300">
-        <main className="pt-20 pb-28 lg:pb-12 px-4 lg:px-10 max-w-7xl mx-auto">
+        <main className="pt-20 pb-28 lg:pb-12 px-16 lg:px-24 w-full">
           {currentPage === 'dashboard' && <Dashboard filters={filters} />}
           {currentPage === 'forecasting' && <Predictions filters={filters} />}
           {currentPage === 'intelligence' && <Intelligence filters={filters} />}
