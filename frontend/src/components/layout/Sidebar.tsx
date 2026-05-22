@@ -7,9 +7,9 @@ interface SidebarProps {
   onNavigate: (page: string) => void
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ 
-  className = '', 
-  currentPage, 
+export const Sidebar: React.FC<SidebarProps> = ({
+  className,
+  currentPage,
   onNavigate,
 }) => {
   const navItem = (page: string, label: string, icon: string) => {

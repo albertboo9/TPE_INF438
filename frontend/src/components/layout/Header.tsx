@@ -1,63 +1,310 @@
-import React from "react";
-import { Moon, Sun, Bell } from "lucide-react";
-import { useTheme } from "../../context/ThemeContext";
-import { useAuth } from "../../context/AuthContext";
+import React from "react"
+
+import {
+  Bell,
+  Search,
+  Moon,
+  Sun,
+} from "lucide-react"
+
+import { useTheme } from "../../context/ThemeContext"
+
+import { useAuth } from "../../context/AuthContext"
+
+import { cn } from "../../lib/utils"
 
 interface HeaderProps {
-  currentPage?: string;
-  onOpenFilters?: () => void;
-  className?: string;
+  className?: string
+  currentPage?: string
 }
 
-const pageLabels: Record<string, string> = {
-  dashboard: "Dashboard",
-  forecasting: "Prévisions",
-  intelligence: "Intelligence",
-};
+export const Header: React.FC<HeaderProps> = ({
+  className,
+  currentPage
+}) => {
 
-export const Header: React.FC<HeaderProps> = ({ currentPage = "dashboard" }) => {
-  const { theme, toggleTheme } = useTheme();
-  const { user } = useAuth();
+  const {
+    theme,
+    toggleTheme
+  } = useTheme()
+
+  const {
+    user
+  } = useAuth()
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-14 px-4 lg:px-8 bg-surface/80 backdrop-blur-xl border-b border-border flex items-center justify-between">
-      {/* Left */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-brand-500 flex items-center justify-center">
-            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
-            </svg>
+
+    <header
+      className={cn(
+        `
+        fixed
+        top-0
+        left-0
+        right-0
+        z-50
+
+        px-6
+        lg:px-10
+        py-4
+
+        bg-surface/70
+        backdrop-blur-2xl
+
+        border-b
+        border-border
+
+        shadow-dashboard
+
+        transition-all
+        duration-500
+        `,
+        className
+      )}
+    >
+
+      <div
+        className="
+        flex
+        items-center
+        justify-between
+        "
+      >
+
+        {/* LEFT */}
+
+        <div
+          className="
+          flex
+          items-center
+          gap-8
+          "
+        >
+
+          {/* LOGO */}
+
+          <div>
+
+            <h1
+              className="
+              text-2xl
+              font-black
+
+              bg-gradient-to-r
+              from-primary
+              via-[#9f86e3]
+              to-tertiary
+
+              bg-clip-text
+              text-transparent
+              "
+            >
+              RetailSense AI
+            </h1>
+
           </div>
-          <span className="text-sm font-bold text-on-background hidden sm:block">RetailSense</span>
+
         </div>
-        <span className="text-xs text-on-surface-variant font-medium hidden sm:block">/</span>
-        <span className="text-xs font-medium text-on-surface-variant capitalize">{pageLabels[currentPage] || currentPage}</span>
+
+        {/* RIGHT */}
+
+        <div
+          className="
+          flex
+          items-center
+          gap-4
+          "
+        >
+
+          {/* SEARCH */}
+
+          <div
+            className="
+            hidden
+            lg:flex
+
+            items-center
+            gap-3
+
+            px-4
+            py-3
+
+            w-[260px]
+
+            rounded-2xl
+
+            bg-card
+            border
+            border-border
+            "
+          >
+
+            <Search
+              size={18}
+              className="
+              text-textSecondary
+              "
+            />
+
+            <input
+              placeholder="Search..."
+              className="
+              bg-transparent
+              outline-none
+              w-full
+              text-sm
+              "
+            />
+
+          </div>
+
+          {/* NOTIFICATION */}
+
+          <button
+            className="
+            relative
+
+            w-11
+            h-11
+
+            rounded-2xl
+
+            bg-card
+
+            border
+            border-border
+
+            flex
+            items-center
+            justify-center
+
+            hover:scale-105
+
+            transition-all
+            "
+          >
+            <Bell size={18} />
+
+            <span
+              className="
+              absolute
+              top-2
+              right-2
+
+              w-2
+              h-2
+
+              rounded-full
+
+              bg-red-500
+              "
+            />
+          </button>
+
+          {/* THEME */}
+
+          <button
+            onClick={toggleTheme}
+            className="
+            w-11
+            h-11
+
+            rounded-2xl
+
+            bg-card
+
+            border
+            border-border
+
+            flex
+            items-center
+            justify-center
+
+            hover:scale-105
+
+            transition-all
+            "
+          >
+            {
+              theme === "dark"
+                ? <Sun size={18} className="text-tertiary" />
+                : <Moon size={18} className="text-primary" />
+            }
+          </button>
+
+          {/* USER */}
+
+          <div
+            className="
+            flex
+            items-center
+            gap-3
+
+            pl-3
+            "
+          >
+
+            <div
+              className="
+              hidden
+              md:block
+              "
+            >
+
+              <p
+                className="
+                text-sm
+                font-semibold
+                "
+              >
+                {user?.name || "Administrator"}
+              </p>
+
+              <p
+                className="
+                text-xs
+                text-textSecondary
+                "
+              >
+                {user?.role || "Admin"}
+              </p>
+
+            </div>
+
+            <div
+              className="
+              w-12
+              h-12
+
+              rounded-2xl
+
+              bg-gradient-to-br
+              from-primary
+              to-secondary
+
+              text-white
+              font-bold
+
+              flex
+              items-center
+              justify-center
+
+              shadow-lg
+              "
+            >
+              {
+                user?.name
+                  ? user.name.substring(0, 2).toUpperCase()
+                  : "AD"
+              }
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
 
-      {/* Right */}
-      <div className="flex items-center gap-3">
-        <button className="relative w-8 h-8 rounded-lg bg-surface-variant flex items-center justify-center hover:bg-border transition-colors">
-          <Bell size={14} className="text-on-surface-variant" />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-rose-500" />
-        </button>
-
-        <button onClick={toggleTheme} className="w-8 h-8 rounded-lg bg-surface-variant flex items-center justify-center hover:bg-border transition-colors">
-          {theme === "dark" ? <Sun size={14} className="text-amber-500" /> : <Moon size={14} className="text-brand-600" />}
-        </button>
-
-        <div className="flex items-center gap-2.5 pl-2 border-l border-border">
-          <div className="w-8 h-8 rounded-lg bg-brand-500 text-white text-[11px] font-bold flex items-center justify-center">
-            {user?.name ? user.name.substring(0, 2).toUpperCase() : "AD"}
-          </div>
-          <div className="hidden md:block">
-            <p className="text-xs font-semibold text-on-background">{user?.name || "Admin"}</p>
-            <p className="text-[10px] text-on-surface-variant">{user?.role || "Admin"}</p>
-          </div>
-        </div>
-      </div>
     </header>
-  );
-};
 
-export default Header;
+  )
+}

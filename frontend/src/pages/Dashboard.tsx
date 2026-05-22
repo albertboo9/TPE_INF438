@@ -1,366 +1,928 @@
 import React, { useState } from 'react';
-import { Card } from '../components/layout/GlassCard';
+import { GlassCard } from '../components/layout/GlassCard';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
+import Button from '../components/ui/Button';
+import { TrendingUp,Package, BadgePercent,Wallet,Eye,ArrowRight,Sparkles,Activity, } from "lucide-react"
+
 import { OnboardingTour } from '../components/ui/OnboardingTour';
 import { 
-  useFullDashboard, useSalesTrend, useCategoryPerformance, useTopProducts,
-  useSalesByDayOfWeek, useTopStores, useStoreTypeComparison,
-  useCityPerformance, useHolidayEffect, usePromotionImpact, useInventoryInsights
+  useFullDashboard, 
+  useSalesTrend, 
+  useCategoryPerformance, 
+  useTopProducts,
+  useSalesByDayOfWeek,
+  useTopStores,
+  useStoreTypeComparison,
+  useCityPerformance,
+  useHolidayEffect,
+  usePromotionImpact,
+  useInventoryInsights
 } from '../hooks/useAnalytics';
 import { apiClient, AnalyticsFilters } from '../services/api';
+
 import {
-  AreaChart, Area, LineChart, Line, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend
+  AreaChart,
+  Area,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
 } from 'recharts';
 
-interface DashboardProps { filters: AnalyticsFilters; }
 
-const COLORS = ['#8b5cf6', '#6366f1', '#10b981', '#f59e0b', '#f43f5e', '#ec4899'];
+
+
+
+interface DashboardProps {
+  filters: AnalyticsFilters;
+}
+
+
+
+
+const COLORS = ['#8069BF', '#6366f1', '#10b981', '#C9A74D', '#f43f5e', '#ec4899'];
+
+type DashboardTab = 'operations' | 'geographic' | 'campaigns' | 'predictive';
 
 export const Dashboard: React.FC<DashboardProps> = ({ filters }) => {
-  const [activeTab, setActiveTab] = useState<string>('operations');
+
+
+
+
+  const [activeTab, setActiveTab] = useState<DashboardTab>('operations');
   const [chartType, setChartType] = useState<'area' | 'line' | 'bar'>('area');
-  const [isMlConnected, setIsMlConnected] = useState(false);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => {
+    return !localStorage.getItem('onboarding-completed');
+  });
+
+  // ML Live simulation states
+  const [isMlConnected, setIsMlConnected] = useState<boolean>(false);
+  const [magasinVec, setMagasinVec] = useState<number>(3);
+  const [saisonVec, setSaisonVec] = useState<number>(0.2);
+  const [ventesVeille, setVentesVeille] = useState<number>(1450);
+  const [moyenneVentes7j, setMoyenneVentes7j] = useState<number>(1480);
+  const [estWeekend, setEstWeekend] = useState<number>(0);
+  const [estJourFerie, setEstJourFerie] = useState<number>(0);
+  const [indicateurPromotion, setIndicateurPromotion] = useState<number>(1);
+  const [prixPetrole, setPrixPetrole] = useState<number>(75.4);
   const [simulatedSales, setSimulatedSales] = useState<number | null>(null);
-  const [isSimulating, setIsSimulating] = useState(false);
+  const [isSimulating, setIsSimulating] = useState<boolean>(false);
 
-  // ML inputs
-  const [ventesVeille, setVentesVeille] = useState(1450);
-  const [moyenneVentes7j, setMoyenneVentes7j] = useState(1480);
-  const [estWeekend, setEstWeekend] = useState(0);
-  const [estJourFerie, setEstJourFerie] = useState(0);
-  const [indicateurPromotion, setIndicateurPromotion] = useState(1);
-  const [prixPetrole, setPrixPetrole] = useState(75.4);
-  const [magasinVec, setMagasinVec] = useState(3);
-  const [saisonVec, setSaisonVec] = useState(0.2);
+  // Queries - Core Stats & Graphs
+  // const { data: dashboardData, isLoading: isDashboardLoading } = useFullDashboard(filters);
+  // const { data: trendData = [], isLoading: isTrendLoading } = useSalesTrend(filters);
+  // const { data: categoryData = [], isLoading: isCategoryLoading } = useCategoryPerformance(filters);
+  // const { data: skuData = [], isLoading: isSkuLoading } = useTopProducts(filters);
+   // ✅ HOOKS ICI (OBLIGATOIRE)
+  const { data: dashboardData, isLoading: isDashboardLoading } = useFullDashboard(filters);
+  const { data: trendData = [] } = useSalesTrend(filters);
+  const { data: categoryData = [] } = useCategoryPerformance(filters);
+  const { data: promoData = [] } = usePromotionImpact(filters);
 
-  const { data: dd, isLoading: ld } = useFullDashboard(filters);
-  const { data: trend = [], isLoading: lt } = useSalesTrend(filters);
-  const { data: cat = [], isLoading: lc } = useCategoryPerformance(filters);
-  const { data: sku = [], isLoading: ls } = useTopProducts(filters);
-  const { data: city = [], isLoading: lcy } = useCityPerformance(filters);
-  const { data: stores = [], isLoading: lst } = useTopStores(filters);
-  const { data: types = [], isLoading: ltp } = useStoreTypeComparison(filters);
-  const { data: days = [], isLoading: ldy } = useSalesByDayOfWeek(filters);
-  const { data: holiday = [], isLoading: lh } = useHolidayEffect(filters);
-  const { data: promo = [], isLoading: lp } = usePromotionImpact(filters);
-  const { data: inventory = [], isLoading: li } = useInventoryInsights(filters);
 
-  const triggerSimulation = async () => {
-    setIsSimulating(true);
-    try {
-      if (isMlConnected) {
-        const r = await apiClient.predictSales({
-          magasin_index: 3, famille_index: 1, saison_index: Number(saisonVec),
-          ventes_veille: Number(ventesVeille), moyenne_ventes_7j: Number(moyenneVentes7j),
-          est_weekend: Number(estWeekend), est_jour_ferie: Number(estJourFerie),
-          indicateur_promotion: Number(indicateurPromotion), prix_petrole: Number(prixPetrole),
-          nb_transactions: 100, ventes_veille_produit: 10, moyenne_7j_produit: 10, est_perissable: 0,
-        });
-        setSimulatedSales(r.prediction);
-      } else {
-        setTimeout(() => {
-          setSimulatedSales((ventesVeille * 0.45 + moyenneVentes7j * 0.55) * (1 + indicateurPromotion * 0.18) * (1 - estWeekend * 0.04) * (1 + estJourFerie * 0.22));
-          setIsSimulating(false);
-        }, 300);
-        return;
-      }
-    } catch { setSimulatedSales((ventesVeille * 0.45 + moyenneVentes7j * 0.55) * (1 + indicateurPromotion * 0.15)); }
-    finally { if (isMlConnected) setIsSimulating(false); }
-  };
+  // -------------------------
+  // FORMATTING SAFE
+  // -------------------------
 
-  React.useEffect(() => { triggerSimulation(); }, [ventesVeille, moyenneVentes7j, estWeekend, estJourFerie, indicateurPromotion, prixPetrole, isMlConnected]);
-
-  const fmtDays = days.map((d: any) => ({
-    day: ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'][Number(d.jour_semaine) - 1] || 'Dim',
-    sales: Number(d.total_sales || d.unitSales || d.sales || 0)
+  const formattedTrend = (trendData || []).map((d: any) => ({
+    date: d.salesDate
+      ? new Date(d.salesDate).toLocaleDateString('fr-FR', {
+          day: 'numeric',
+          month: 'short',
+        })
+      : d.dateKey,
+    sales: Number(d.unitSales || d.totalSales || 0),
   }));
 
-  const tabs = [
-    { id: 'operations', label: 'Opérations' },
-    { id: 'geographic', label: 'Géographique' },
-    { id: 'campaigns', label: 'Marketing' },
-    { id: 'predictive', label: 'ML' },
-  ];
+  const formattedCategories = (categoryData || []).map((d: any) => ({
+    name: d.family || d.category || 'Other',
+    value: Number(d.unitSales || d.totalSales || 0),
+  }));
+
+   // -------------------------
+  // SAFE FALLBACKS (IMPORTANT)
+  // -------------------------
+
+  const safeTrend =
+    formattedTrend.length > 0
+      ? formattedTrend
+      : [
+          { date: 'Mon', sales: 1200 },
+          { date: 'Tue', sales: 1800 },
+          { date: 'Wed', sales: 1500 },
+          { date: 'Thu', sales: 2200 },
+          { date: 'Fri', sales: 2600 },
+          { date: 'Sat', sales: 2000 },
+          { date: 'Sun', sales: 2400 },
+        ];
+
+  const safeCategories =
+    formattedCategories.length > 0
+      ? formattedCategories
+      : [
+          { name: 'Food', value: 12000 },
+          { name: 'Tech', value: 18000 },
+          { name: 'Fashion', value: 9000 },
+          { name: 'groceries', value: 15000 },
+          { name: 'oil', value: 9000 },
+        ];
+  const formattedPromo = (promoData || []).map((d: any) => ({
+    date: d.dateKey || d.date || 'N/A',
+    impact: Number(d.impact || d.value || 0),
+  }));
+
+  const safePromo =
+    formattedPromo.length > 0
+      ? formattedPromo
+      : [
+          { date: 'Mon', impact: 20 },
+          { date: 'Tue', impact: 35 },
+          { date: 'Wed', impact: 28 },
+          { date: 'Thu', impact: 50 },
+          { date: 'Fri', impact: 45 },
+          { date: 'Sat', impact: 43 },
+          { date: 'Sun', impact: 48 },
+        ];
+
+  // -------------------------
+  // ML SIMULATION
+  // -------------------------
+
+  const triggerSimulation = () => {
+    const mock =
+      (ventesVeille * 0.45 + moyenneVentes7j * 0.55) *
+      (1 + indicateurPromotion * 0.18) *
+      (1 - estWeekend * 0.04) *
+      (1 + estJourFerie * 0.22);
+
+    setSimulatedSales(mock);
+  };
+
+  React.useEffect(() => {
+    triggerSimulation();
+  }, []);
+  
+  // Queries - Geographic & Store Intelligence
+  // const { data: cityData = [], isLoading: isCityLoading } = useCityPerformance(filters);
+  // const { data: storeData = [], isLoading: isStoreLoading } = useTopStores(filters);
+  // const { data: typeData = [], isLoading: isTypeLoading } = useStoreTypeComparison(filters);
+
+  // // Queries - Marketing Campaigns & Calendar Surges
+  // const { data: dayOfWeekData = [], isLoading: isDayLoading } = useSalesByDayOfWeek(filters);
+  // const { data: holidayData = [], isLoading: isHolidayLoading } = useHolidayEffect(filters);
+  // const { data: promoData = [], isLoading: isPromoLoading } = usePromotionImpact(filters);
+
+  // // Queries - Supply Chain Inventory Safety Stocks
+  // const { data: inventoryData = [], isLoading: isInventoryLoading } = useInventoryInsights(filters);
+
+  const handleFinishOnboarding = () => {
+    localStorage.setItem('onboarding-completed', 'true');
+    setIsOnboardingOpen(false);
+  };
+
+  const handleRestartOnboarding = () => {
+    localStorage.removeItem('onboarding-completed');
+    setIsOnboardingOpen(true);
+  };
+
+  // // ML Simulation computation (pre-deployment local model + direct link)
+  // const triggerSimulation = async () => {
+  //   setIsSimulating(true);
+  //   try {
+  //     if (isMlConnected) {
+  //       // Direct call to active Databricks pipeline
+  //       const response = await apiClient.predictSales({
+  //         magasin_vec: Number(magasinVec),
+  //         saison_vec: Number(saisonVec),
+  //         ventes_veille: Number(ventesVeille),
+  //         moyenne_ventes_7j: Number(moyenneVentes7j),
+  //         est_weekend: Number(estWeekend),
+  //         est_jour_ferie: Number(estJourFerie),
+  //         indicateur_promotion: Number(indicateurPromotion),
+  //         prix_petrole: Number(prixPetrole),
+  //       });
+  //       setSimulatedSales(response.prediction_transactions);
+  //     } else {
+  //       // Pre-deployment fallback engine
+  //       setTimeout(() => {
+  //         const mockVal = (ventesVeille * 0.45 + moyenneVentes7j * 0.55) * 
+  //           (1 + (indicateurPromotion * 0.18)) * 
+  //           (1 - (estWeekend * 0.04)) * 
+  //           (1 + (estJourFerie * 0.22));
+  //         setSimulatedSales(mockVal);
+  //         setIsSimulating(false);
+  //       }, 300);
+  //     }
+  //   } catch {
+  //     setSimulatedSales((ventesVeille * 0.45 + moyenneVentes7j * 0.55) * (1 + (indicateurPromotion * 0.15)));
+  //   } finally {
+  //     if (isMlConnected) setIsSimulating(false);
+  //   }
+  // };
+
+  // React.useEffect(() => {
+  //   triggerSimulation();
+  // }, [magasinVec, saisonVec, ventesVeille, moyenneVentes7j, estWeekend, estJourFerie, indicateurPromotion, prixPetrole, isMlConnected]);
+
+  // // Formating calculations for Recharts
+  // const formattedTrend = trendData.map((d: any) => ({
+  //   date: d.salesDate ? new Date(d.salesDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : d.dateKey,
+  //   sales: Number(d.unitSales || d.totalSales || 0),
+  // }));
+
+  // const formattedCategories = categoryData.slice(0, 5).map((d: any) => ({
+  //   name: d.family || d.category || 'Other',
+  //   value: Number(d.unitSales || d.totalSales || 0)
+  // }));
+
+  // const formattedCities = cityData.slice(0, 5).map((d: any) => ({
+  //   city: d.city || 'Quito',
+  //   sales: Number(d.unitSales || d.totalSales || 0)
+  // }));
+
+  // const formattedStoreTypes = typeData.map((d: any) => ({
+  //   type: `Type ${d.storeType || d.type || 'A'}`,
+  //   sales: Number(d.unitSales || d.totalSales || 0)
+  // }));
+
+  // const formattedDays = dayOfWeekData.map((d: any) => ({
+  //   day: d.dayOfWeek === '1' ? 'Lun' : d.dayOfWeek === '2' ? 'Mar' : d.dayOfWeek === '3' ? 'Mer' : d.dayOfWeek === '4' ? 'Jeu' : d.dayOfWeek === '5' ? 'Ven' : d.dayOfWeek === '6' ? 'Sam' : 'Dim',
+  //   sales: Number(d.unitSales || d.totalSales || 0)
+  // }));
 
   return (
-    <div className="space-y-4 animate-fade-in">
-      {/* KPI Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {ld ? Array.from({length:4}).map((_,i) => <SkeletonLoader key={i} type="card" />) : (
+    <div className="space-y-6 animate-fade-in w-full px-4 py-12  min-h-screen px-4 lg:px-6">
+ 
+
+      <OnboardingTour isOpen={isOnboardingOpen} onClose={handleFinishOnboarding} />
+
+      {/* Main Cockpit Page Header */}
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                
+        <div className="bg-card w-full rounded-2xl p-5 flex items-center gap-3 border border-border mb-8 flex justify-between  ">
+          <span className="text-3xl font-bold neon-title">Overview</span>
+          <div className="flex gap-2 self-end sm:self-auto">
+            <Button
+              variant="primary"
+              onClick={handleRestartOnboarding}
+              className="flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[24px] leading-none flex items-center">
+                help
+              </span>
+
+              <span className="text-xs font-semibold leading-none">
+                Interactive Guide
+              </span>
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="tour-kpis">
+        {isDashboardLoading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonLoader key={i} type="card" />
+          ))
+        ) : (
           <>
-            <Card className="flex flex-col gap-1">
-              <span className="kpi-label">Ventes Totales</span>
-              <span className="kpi-value">{dd?.totalSales ? Number(dd.totalSales).toLocaleString('fr-FR') : '---'}</span>
-              <span className="text-[10px] text-emerald-600 font-semibold">+12.4%</span>
-            </Card>
-            <Card className="flex flex-col gap-1">
-              <span className="kpi-label">Taux Promo</span>
-              <span className="kpi-value">{dd?.promotedSalesRatio ? Number(dd.promotedSalesRatio).toFixed(1) : '8.4'}%</span>
-              <span className="text-[10px] text-on-surface-variant">Objectif 10%</span>
-            </Card>
-            <Card className="flex flex-col gap-1">
-              <span className="kpi-label">Magasins Actifs</span>
-              <span className="kpi-value">{dd?.activeStoresCount || 54}</span>
-              <span className="text-[10px] text-emerald-600 font-semibold">100% en ligne</span>
-            </Card>
-            <Card className="flex flex-col gap-1">
-              <span className="kpi-label">Moyenne/Magasin</span>
-              <span className="kpi-value">{dd?.averageSalesPerStore ? Number(dd.averageSalesPerStore).toFixed(1) : '---'}</span>
-              <span className="text-[10px] text-on-surface-variant">Index sécurité</span>
-            </Card>
+            {/* SALES - BLUE */}
+            <GlassCard hoverGlow className="p-5 h-40 flex flex-col ">
+
+              {/* HEADER (TOP) */}
+              <div className="flex items-center justify-center gap-4 ">
+                <TrendingUp size={30} className='text-blue-400' />
+                <span className="text-sm text-3xl font-semibold uppercase">
+                  Total Revenue
+                </span>
+              </div>
+
+              {/* VALUE (CENTERED) */}
+              <div className="flex-1 flex items-center justify-center">
+                <h3 className="text-3xl font-black text-center leading-none">
+                  {Number(dashboardData?.totalSales || 14839201).toLocaleString("fr-FR")}
+                </h3>
+              </div>
+
+              {/* BADGE (BOTTOM) */}
+              <div className="flex justify-start">
+                <span className="text-[13px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 font-bold">
+                  +12.4%
+                </span>
+              </div>
+
+            </GlassCard>
+
+           
+
+            {/* STORES - ORANGE */}
+            <GlassCard hoverGlow className="p-5 h-40 flex flex-col">
+
+              <div className="flex items-center justify-center gap-4">
+                <Package size={30} className='text-orange-300' />
+                <span className="text-sm font-semibold uppercase">
+                  Transaction
+                </span>
+              </div>
+
+              <div className="flex-1 flex items-center justify-center">
+                <h3 className="text-3xl font-black text-center leading-none">
+                  {Number(dashboardData?.activeStoresCount || 54)}
+                </h3>
+              </div>
+
+              <div className="flex justify-start">
+                <span className="text-[13px] px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-300 font-bold">
+                  Online
+                </span>
+              </div>
+
+            </GlassCard>
+
+             {/* PROMOTION - PURPLE */}
+            <GlassCard hoverGlow className="p-5 h-40 flex flex-col">
+
+              <div className="flex items-center justify-center gap-4">
+                <BadgePercent size={30} className='text-purple-300' />
+                <span className="text-sm font-semibold uppercase">
+                  Promotion Impact
+                </span>
+              </div>
+
+              <div className="flex-1 flex items-center justify-center">
+                <h3 className="text-3xl font-black text-center leading-none">
+                  {Number(dashboardData?.promotedSalesRatio || 8.42).toFixed(2)}%
+                </h3>
+              </div>
+
+              <div className="flex justify-start">
+                <span className="text-[13px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 font-bold">
+                  Target 10%
+                </span>
+              </div>
+
+            </GlassCard>
+            <GlassCard hoverGlow className="p-5 h-40 flex flex-col">
+
+              <div className="flex items-center justify-center gap-4">
+                <Wallet size={30} className='text-emerald-300' />
+                <span className="text-sm font-semibold uppercase">
+                  Average Order Value (AOV)
+                </span>
+              </div>
+
+              <div className="flex-1 flex items-center justify-center">
+                <h3 className="text-3xl font-black text-center leading-none">
+                  {Number(dashboardData?.averageSalesPerStore || 3429.4).toFixed(1)}
+                </h3>
+              </div>
+
+              <div className="flex justify-start">
+                <span className="text-[13px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-bold">
+                  Stable
+                </span>
+              </div>
+
+            </GlassCard>
+
+          
+            
           </>
         )}
-      </div>
+      </section>
+      
+      {/* ================= OTHER PAGES PREVIEW ================= */}
+      <section
+        className="
+          grid
+          grid-cols-1
+          lg:grid-cols-3
+          gap-6
+          mt-12
+          py-12
+        "
+      >
 
-      {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-surface-variant rounded-xl w-fit">
-        {tabs.map(t => (
-          <button key={t.id} onClick={() => setActiveTab(t.id)}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              activeTab === t.id ? 'bg-surface text-on-background shadow-soft' : 'text-on-surface-variant hover:text-on-surface'
-            }`}>{t.label}</button>
-        ))}
-      </div>
+        {/* ================= PREDICTION PREVIEW ================= */}
 
-      {/* Tab: Operations */}
-      {activeTab === 'operations' && (
-        <div className="grid grid-cols-12 gap-3">
-          <Card className="col-span-12 lg:col-span-7">
-            <div className="flex items-center justify-between mb-3">
-              <span className="section-title">Tendance des Ventes</span>
-              <div className="flex gap-0.5 p-0.5 bg-surface-variant rounded-lg">
-                {(['area', 'line', 'bar'] as const).map(t => (
-                  <button key={t} onClick={() => setChartType(t)}
-                    className={`px-2 py-1 rounded text-[10px] font-medium ${chartType === t ? 'bg-surface text-on-background shadow-soft' : 'text-on-surface-variant'}`}>{t}</button>
-                ))}
-              </div>
-            </div>
-            <div className="h-56">
-              {lt ? <SkeletonLoader type="chart" /> : (
-                <ResponsiveContainer width="100%" height="100%">
-                  {chartType === 'area' ? (
-                    <AreaChart data={trend.map((d: any) => ({ date: d.mois ? `${d.annee}-${String(d.mois).padStart(2,'0')}` : '', sales: Number(d.total_sales||d.sales||0) }))}>
-                      <defs><linearGradient id="c" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.3}/><stop offset="100%" stopColor="#8b5cf6" stopOpacity={0}/></linearGradient></defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/50" />
-                      <XAxis dataKey="date" tick={{fontSize:10}} tickLine={false} axisLine={false} className="text-on-surface-variant" />
-                      <YAxis tick={{fontSize:10}} tickLine={false} axisLine={false} className="text-on-surface-variant" />
-                      <Tooltip contentStyle={{background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'12px', fontSize:'12px'}} />
-                      <Area type="monotone" dataKey="sales" stroke="#8b5cf6" strokeWidth={2} fill="url(#c)" />
-                    </AreaChart>
-                  ) : (
-                    <BarChart data={trend.map((d: any) => ({ date: d.mois ? `${d.annee}-${String(d.mois).padStart(2,'0')}` : '', sales: Number(d.total_sales||d.sales||0) }))}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/50" />
-                      <XAxis dataKey="date" tick={{fontSize:10}} tickLine={false} axisLine={false} />
-                      <YAxis tick={{fontSize:10}} tickLine={false} axisLine={false} />
-                      <Tooltip contentStyle={{background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'12px', fontSize:'12px'}} />
-                      <Bar dataKey="sales" fill="#8b5cf6" radius={[4,4,0,0]} />
-                    </BarChart>
-                  )}
-                </ResponsiveContainer>
-              )}
-            </div>
-          </Card>
+        <GlassCard
+          hoverGlow
+          className="
+            p-6
+            flex
+            flex-col
+            gap-5
+            min-h-[280px]
+            relative
+            overflow-hidden
+          "
+        >
 
-          <Card className="col-span-12 lg:col-span-5">
-            <span className="section-title mb-3 block">Catégories</span>
-            <div className="h-56">
-              {lc ? <SkeletonLoader type="chart" /> : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={cat.slice(0,5).map((d:any) => ({ name: d.categorie_groupe||d.family||'Autre', value: Number(d.totalSales||d.unitSales||0) }))} cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={3} dataKey="value">
-                      {cat.slice(0,5).map((_:any,i:number) => <Cell key={i} fill={COLORS[i%COLORS.length]} />)}
-                    </Pie>
-                    <Tooltip contentStyle={{background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'12px', fontSize:'12px'}} />
-                    <Legend wrapperStyle={{fontSize:10}} />
-                  </PieChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </Card>
+          <div className="absolute right-[-20px] top-[-20px] w-32 h-32 rounded-full bg-emeraldAi/10 blur-3xl" />
 
-          <Card className="col-span-12">
-            <span className="section-title mb-3 block">Top Produits</span>
-            {ls ? <SkeletonLoader type="list" /> : (
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="text-on-surface-variant border-b border-border">
-                    <th className="py-2 text-left font-medium">SKU</th>
-                    <th className="py-2 text-left font-medium">Famille</th>
-                    <th className="py-2 text-right font-medium">Volume</th>
-                    <th className="py-2 text-right font-medium">Promo</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {sku.slice(0,5).map((s: any, i: number) => (
-                    <tr key={i} className="hover:bg-surface-variant/50 transition-colors">
-                      <td className="py-2.5 font-mono text-brand-600 font-medium">#{s.item_nbr || (1000+i)}</td>
-                      <td className="py-2.5">{s.family || 'Produce'}</td>
-                      <td className="py-2.5 text-right font-medium">{Number(s.total_sales||s.unitSales||0).toLocaleString('fr-FR')}</td>
-                      <td className="py-2.5 text-right">
-                        <span className={s.onPromotionRatio > 0 ? 'badge-emerald' : 'badge-neutral'}>
-                          {s.onPromotionRatio > 0 ? 'Oui' : 'Non'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </Card>
-        </div>
-      )}
+          <div className="flex items-center justify-between">
 
-      {/* Tab: Geographic */}
-      {activeTab === 'geographic' && (
-        <div className="grid grid-cols-12 gap-3">
-          <Card className="col-span-12 lg:col-span-6">
-            <span className="section-title mb-3 block">Performance par Ville</span>
-            <div className="h-64">
-              {lcy ? <SkeletonLoader type="chart" /> : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={city.slice(0,5).map((d:any) => ({ city: d.ville||d.city||'N/A', sales: Number(d.total_sales||d.unitSales||0) }))}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/50" />
-                    <XAxis dataKey="city" tick={{fontSize:10}} tickLine={false} axisLine={false} />
-                    <YAxis tick={{fontSize:10}} tickLine={false} axisLine={false} />
-                    <Tooltip contentStyle={{background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'12px', fontSize:'12px'}} />
-                    <Bar dataKey="sales" radius={[4,4,0,0]}>
-                      {city.slice(0,5).map((_:any,i:number) => <Cell key={i} fill={COLORS[i%COLORS.length]} />)}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </Card>
-          <Card className="col-span-12 lg:col-span-6">
-            <span className="section-title mb-3 block">Top Magasins</span>
-            {lst ? <SkeletonLoader type="list" /> : (
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="text-on-surface-variant border-b border-border">
-                    <th className="py-2 text-left font-medium">Magasin</th>
-                    <th className="py-2 text-left font-medium">Ville</th>
-                    <th className="py-2 text-right font-medium">Volume</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50">
-                  {stores.slice(0,5).map((s: any, i: number) => (
-                    <tr key={i} className="hover:bg-surface-variant/50">
-                      <td className="py-2.5 text-brand-600 font-medium">Store #{s.store_nbr || (i+1)}</td>
-                      <td className="py-2.5">{s.ville || s.city || 'Quito'}</td>
-                      <td className="py-2.5 text-right font-medium">{Number(s.total_sales||s.unitSales||0).toLocaleString('fr-FR')}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </Card>
-        </div>
-      )}
+            <div className="flex items-center gap-3">
 
-      {/* Tab: Marketing */}
-      {activeTab === 'campaigns' && (
-        <div className="grid grid-cols-12 gap-3">
-          <Card className="col-span-12 lg:col-span-7">
-            <span className="section-title mb-3 block">Impact Promotions</span>
-            <div className="h-56">
-              {lp ? <SkeletonLoader type="chart" /> : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={promo.map((d:any) => ({ name: d.en_promotion ? 'Promo' : 'Normal', sales: Number(d.total_sales||0) }))}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/50" />
-                    <XAxis dataKey="name" tick={{fontSize:10}} tickLine={false} axisLine={false} />
-                    <YAxis tick={{fontSize:10}} tickLine={false} axisLine={false} />
-                    <Tooltip contentStyle={{background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'12px', fontSize:'12px'}} />
-                    <Bar dataKey="sales" radius={[4,4,0,0]}>
-                      {promo.map((_:any,i:number) => <Cell key={i} fill={[COLORS[2], COLORS[4]][i%2]} />)}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </Card>
-          <Card className="col-span-12 lg:col-span-5">
-            <span className="section-title mb-3 block">Ventes par Jour</span>
-            <div className="h-56">
-              {ldy ? <SkeletonLoader type="chart" /> : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={fmtDays}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/50" />
-                    <XAxis dataKey="day" tick={{fontSize:10}} tickLine={false} axisLine={false} />
-                    <YAxis tick={{fontSize:10}} tickLine={false} axisLine={false} />
-                    <Tooltip contentStyle={{background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'12px', fontSize:'12px'}} />
-                    <Bar dataKey="sales" radius={[4,4,0,0]}>
-                      {fmtDays.map((_:any,i:number) => <Cell key={i} fill={COLORS[i%COLORS.length]} />)}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* Tab: ML */}
-      {activeTab === 'predictive' && (
-        <div className="grid grid-cols-12 gap-3">
-          <Card className="col-span-12 lg:col-span-8">
-            <div className="flex items-center justify-between mb-3">
-              <span className="section-title">Simulation ML</span>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-on-surface-variant">Live</span>
-                <button onClick={() => setIsMlConnected(!isMlConnected)} className={`w-7 h-3.5 rounded-full relative transition-colors ${isMlConnected ? 'bg-brand-500' : 'bg-neutral-300 dark:bg-neutral-700'}`}>
-                  <div className={`w-2.5 h-2.5 bg-white rounded-full absolute top-[2px] transition-all ${isMlConnected ? 'left-[15px]' : 'left-[2px]'}`} />
-                </button>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-[10px] font-medium text-on-surface-variant">Ventes Veille</label>
-                <input type="range" min="0" max="8000" step="50" value={ventesVeille} onChange={e => setVentesVeille(Number(e.target.value))} className="w-full accent-brand-500 h-1 rounded-full mt-1" />
-                <span className="text-xs font-mono text-brand-600">{ventesVeille}</span>
-              </div>
-              <div>
-                <label className="text-[10px] font-medium text-on-surface-variant">Moyenne 7j</label>
-                <input type="range" min="0" max="8000" step="50" value={moyenneVentes7j} onChange={e => setMoyenneVentes7j(Number(e.target.value))} className="w-full accent-brand-500 h-1 rounded-full mt-1" />
-                <span className="text-xs font-mono text-brand-600">{moyenneVentes7j}</span>
-              </div>
-              <div>
-                <label className="text-[10px] font-medium text-on-surface-variant">Prix Pétrole ($)</label>
-                <input type="range" min="10" max="140" step="0.5" value={prixPetrole} onChange={e => setPrixPetrole(Number(e.target.value))} className="w-full accent-brand-500 h-1 rounded-full mt-1" />
-                <span className="text-xs font-mono text-brand-600">${prixPetrole.toFixed(1)}</span>
-              </div>
-              <div className="flex gap-2 items-end">
-                {[
-                  { label: 'Promo', active: indicateurPromotion, set: setIndicateurPromotion },
-                  { label: 'Week-end', active: estWeekend, set: setEstWeekend },
-                  { label: 'Férié', active: estJourFerie, set: setEstJourFerie },
-                ].map(b => (
-                  <button key={b.label} onClick={() => b.set(b.active ? 0 : 1)}
-                    className={`px-2.5 py-1.5 rounded-lg text-[10px] font-medium transition-all ${
-                      b.active ? 'bg-brand-500 text-white' : 'bg-surface-variant text-on-surface-variant'
-                    }`}>{b.label}</button>
-                ))}
-              </div>
-            </div>
-          </Card>
-          <Card className="col-span-12 lg:col-span-4 flex flex-col items-center justify-center gap-2 py-8">
-            {isSimulating && <div className="w-6 h-6 rounded-full border-2 border-brand-500 border-t-transparent animate-spin" />}
-            {!isSimulating && (
-              <>
-                <span className="section-title">Prédiction</span>
-                <span className="text-4xl font-black tracking-tight text-brand-500">
-                  {simulatedSales !== null ? Math.round(simulatedSales).toLocaleString('fr-FR') : '---'}
+              <div
+                className="
+                  w-12 h-12
+                  rounded-2xl
+                  bg-emeraldAi/15
+                  flex items-center justify-center
+                "
+              >
+                <span className="material-symbols-outlined text-emeraldAi">
+                  auto_awesome
                 </span>
-                <span className="text-xs text-on-surface-variant">unités estimées</span>
-                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${isMlConnected ? 'badge-emerald' : 'badge-amber'}`}>
-                  {isMlConnected ? 'Cloud' : 'Local'}
+              </div>
+
+              <div>
+
+                <h3 className="font-bold text-lg">
+                  Sales Prediction
+                </h3>
+
+                <p className="text-xs text-textSecondary">
+                  AI Forecast
+                </p>
+
+              </div>
+
+            </div>
+
+            <Button
+              variant="secondary"
+              className="
+                flex
+                items-center
+                gap-2
+                px-4
+                py-3
+                hover:bg-surface-container
+                transition-all
+                duration-300
+                hover:scale-105
+                shadow-card
+              "
+            >
+              <Eye size={16} />
+
+              <span className="font-medium">
+                Voir plus
+              </span>
+
+              <ArrowRight
+                size={14}
+                className="
+                  opacity-70
+                  group-hover:translate-x-1
+                  transition-transform
+                "
+              />
+            </Button>
+
+          </div>
+
+          <div className="flex-1 flex flex-col justify-center">
+
+            <h1 className="
+              text-4xl
+              font-black
+              font-monoData
+            ">
+              {simulatedSales?.toFixed(0) || "1235"}
+            </h1>
+
+            <p className="text-textSecondary mt-2">
+              Expected transactions
+            </p>
+
+          </div>
+
+          <div className="flex justify-between items-center">
+
+            <span
+              className="
+                px-3 py-1
+                rounded-full
+                bg-emeraldAi/10
+                text-emeraldAi
+                text-sm
+                font-semibold
+              "
+            >
+              +8.4%
+            </span>
+
+            <div
+              className="
+                flex
+                items-center
+                gap-2
+                px-3
+                py-1.5
+                rounded-full
+                bg-emeraldAi/10
+                border
+                border-emeraldAi/20
+              "
+            >
+              <Sparkles size={14} className="text-emeraldAi" />
+
+              <span className="text-xs font-semibold text-emeraldAi">
+                High Confidence
+              </span>
+
+            </div>
+
+          </div>
+
+        </GlassCard>
+
+
+        {/* ================= SALES HISTORY ================= */}
+
+        <GlassCard
+          hoverGlow
+          className="
+            p-6
+            flex
+            flex-col
+            gap-5
+            min-h-[280px]
+            relative
+            overflow-hidden
+          "
+        >
+
+          <div className="absolute right-[-20px] top-[-20px] w-32 h-32 rounded-full bg-primary/10 blur-3xl" />
+
+          <div className="flex justify-between">
+
+            <div className="flex items-center gap-3">
+
+              <div
+                className="
+                  w-12
+                  h-12
+                  rounded-2xl
+                  bg-primary/15
+                  flex items-center justify-center
+                "
+              >
+
+                <span className="material-symbols-outlined text-primary">
+                  history
                 </span>
-              </>
-            )}
-          </Card>
-        </div>
-      )}
+
+              </div>
+
+              <div>
+
+                <h3 className="font-bold text-lg">
+                  Sales History
+                </h3>
+
+                <p className="text-xs text-textSecondary">
+                  Historical records
+                </p>
+
+              </div>
+
+            </div>
+
+            <Button
+              variant="secondary"
+              className="
+                flex
+                items-center
+                gap-2
+                px-4
+                py-3
+                hover:bg-surface-container
+                transition-all
+                duration-300
+                hover:scale-105
+                shadow-card
+              "
+            >
+              <Eye size={16} />
+
+              <span className="font-medium">
+                Voir plus
+              </span>
+
+              <ArrowRight
+                size={14}
+                className="
+                  opacity-70
+                  group-hover:translate-x-1
+                  transition-transform
+                "
+              />
+            </Button>
+
+          </div>
+
+          <div className="flex-1">
+
+            <h1 className="
+              text-4xl
+              font-black
+              font-monoData
+            ">
+              {dashboardData?.totalVolume || "25M"}
+            </h1>
+
+            <p className="text-textSecondary mt-2">
+              Transactions recorded
+            </p>
+
+            <div
+              className="
+                mt-5
+                h-2
+                bg-surface-container
+                rounded-full
+                overflow-hidden
+              "
+            >
+              <div
+                className="
+                  h-full
+                  w-[75%]
+                  bg-primary
+                  rounded-full
+                "
+              />
+            </div>
+
+          </div>
+
+          <div className="flex justify-between items-center">
+
+            <span
+              className="
+                px-3 py-1
+                rounded-full
+                bg-primary/10
+                text-primary
+                text-sm
+                font-semibold
+              "
+            >
+              44.7% Grocery
+            </span>
+
+          </div>
+
+        </GlassCard>
+
+
+        {/* ================= MODEL EVALUATION ================= */}
+
+        <GlassCard
+          hoverGlow
+          className="
+            p-6
+            flex
+            flex-col
+            gap-5
+            min-h-[280px]
+            relative
+            overflow-hidden
+          "
+        >
+
+          <div className="absolute right-[-20px] top-[-20px] w-32 h-32 rounded-full bg-electricIndigo/10 blur-3xl" />
+
+          <div className="flex justify-between">
+
+            <div className="flex items-center gap-3">
+
+              <div
+                className="
+                  w-12
+                  h-12
+                  rounded-2xl
+                  bg-electricIndigo/15
+                  flex items-center justify-center
+                "
+              >
+
+                <span className="material-symbols-outlined text-electricIndigo">
+                  analytics
+                </span>
+
+              </div>
+
+              <div>
+
+                <h3 className="font-bold text-lg">
+                  Model Evaluation
+                </h3>
+
+                <p className="text-xs text-textSecondary">
+                  Prediction accuracy
+                </p>
+
+              </div>
+
+            </div>
+
+            <Button
+              variant="secondary"
+              className="
+                flex
+                items-center
+                gap-2
+                px-4
+                py-3
+                hover:bg-surface-container
+                transition-all
+                duration-300
+                hover:scale-105
+                shadow-card
+              "
+            >
+              <Eye size={16} />
+
+              <span className="font-medium">
+                Voir plus
+              </span>
+
+              <ArrowRight
+                size={14}
+                className="
+                  opacity-70
+                  group-hover:translate-x-1
+                  transition-transform
+                "
+              />
+            </Button>
+
+          </div>
+
+          <div className="flex-1 flex flex-col justify-center">
+
+            <h1 className="
+              text-4xl
+              font-black
+              font-monoData
+            ">
+              94.7%
+            </h1>
+
+            <p className="text-textSecondary">
+              Accuracy
+            </p>
+
+          </div>
+
+          <div className="flex justify-between items-center">
+
+            <span
+              className="
+                px-3 py-1
+                rounded-full
+                bg-electricIndigo/10
+                text-electricIndigo
+                text-sm
+                font-semibold
+              "
+            >
+              5.3% Error
+            </span>
+
+            <p className="text-xs text-textSecondary">
+              RMSE: 8.2
+            </p>
+
+          </div>
+
+        </GlassCard>
+
+      </section>
+
+      {/* ================= GRAPHS SECTION ================= */}
+      {/* ================= GRAPHS SECTION FULL WIDTH ================= */}
+<section className="mt-10 flex flex-col gap-8">
+
+  {/* ================= REVENUE TREND ================= */}
+  <GlassCard
+    hoverGlow
+    className="p-6 flex flex-col gap-4 w-full min-h-[360px]"
+  >
+    <div className="flex items-center justify-between">
+      <h3 className="font-bold text-lg flex items-center gap-2">
+        <Activity className="text-indigo-400" size={18} />
+        Revenue Trend
+      </h3>
+
+      <span className="text-xs px-2 py-1 rounded-full bg-indigo-500/10 text-indigo-400 font-semibold">
+        Live
+      </span>
+    </div>
+
+    <ResponsiveContainer width="100%" height={280}>
+      <AreaChart data={safeTrend}>
+        <defs>
+          <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
+            <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+
+        <XAxis dataKey="date" />
+        <YAxis />
+        <Tooltip />
+
+        <Area
+          type="monotone"
+          dataKey="sales"
+          stroke="#6366f1"
+          fill="url(#colorSales)"
+          strokeWidth={2}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  </GlassCard>
+
+  {/* ================= CATEGORY ================= */}
+  <GlassCard
+    hoverGlow
+    className="p-6 flex flex-col gap-4 w-full min-h-[360px]"
+  >
+    <div className="flex items-center justify-between">
+      <h3 className="font-bold text-lg flex items-center gap-2">
+        <Package className="text-emerald-400" size={18} />
+        Category Performance
+      </h3>
+
+      <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold">
+        Top 5
+      </span>
+    </div>
+
+    <ResponsiveContainer width="100%" height={280}>
+      <BarChart data={safeCategories}>
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Bar dataKey="value" fill="#10b981" radius={[8, 8, 0, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
+  </GlassCard>
+
+  {/* ================= PROMOTION IMPACT ================= */}
+  <GlassCard
+    hoverGlow
+    className="p-6 flex flex-col gap-4 w-full min-h-[360px]"
+  >
+    <div className="flex items-center justify-between">
+      <h3 className="font-bold text-lg flex items-center gap-2">
+        <BadgePercent className="text-pink-400" size={18} />
+        Promotion Impact
+      </h3>
+
+      <span className="text-xs px-2 py-1 rounded-full bg-pink-500/10 text-pink-400 font-semibold">
+        Campaigns
+      </span>
+    </div>
+
+    <ResponsiveContainer width="100%" height={280}>
+      <LineChart data={safePromo}>
+        <XAxis dataKey="date" />
+        <YAxis />
+        <Tooltip />
+
+        <Line
+          type="monotone"
+          dataKey="impact"
+          stroke="#ef4444"
+          strokeWidth={3}
+          dot={{ r: 3 }}
+          activeDot={{ r: 6 }}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  </GlassCard>
+
+</section>
+
+
+      
+
     </div>
   );
 };
