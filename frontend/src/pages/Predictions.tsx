@@ -1,350 +1,202 @@
 import React, { useState, useEffect } from 'react';
-import { GlassCard } from '../components/layout/GlassCard';
-import { SkeletonLoader } from '../components/ui/SkeletonLoader';
+import {
+  TrendingUp, Calendar, CalendarDays, Megaphone, Droplets, Store, Tag, Sun,
+  History, BarChart3, Package, TimerReset, LucideIcon, AlertCircle, ShoppingCart,
+  Sparkles, Zap,
+} from 'lucide-react';
+import { BentoCard } from '../components/layout/BentoCard';
 import { apiClient, AnalyticsFilters } from '../services/api';
 import { useInventoryInsights } from '../hooks/useAnalytics';
 
-interface PredictionsProps {
-  filters: AnalyticsFilters;
-}
+interface PredictionsProps { filters: AnalyticsFilters; }
 
-export const Predictions: React.FC<PredictionsProps> = ({ filters }) => {
-  // 8 ML variables State
-  const [magasinVec, setMagasinVec] = useState<number>(3);
-  const [saisonVec, setSaisonVec] = useState<number>(0.2);
-  const [ventesVeille, setVentesVeille] = useState<number>(1450);
-  const [moyenneVentes7j, setMoyenneVentes7j] = useState<number>(1480);
-  const [estWeekend, setEstWeekend] = useState<number>(0);
-  const [estJourFerie, setEstJourFerie] = useState<number>(0);
-  const [indicateurPromotion, setIndicateurPromotion] = useState<number>(1);
-  const [prixPetrole, setPrixPetrole] = useState<number>(75.4);
+export const Predictions: React.FC<PredictionsProps> = () => {
+  const [magasinIndex, setMagasinIndex] = useState(3);
+  const [familleIndex, setFamilleIndex] = useState(1);
+  const [saisonIndex, setSaisonIndex] = useState(1);
+  const [ventesVeille, setVentesVeille] = useState(300);
+  const [moyenneVentes7j, setMoyenneVentes7j] = useState(300);
+  const [estWeekend, setEstWeekend] = useState(0);
+  const [estJourFerie, setEstJourFerie] = useState(0);
+  const [indicateurPromotion, setIndicateurPromotion] = useState(0);
+  const [prixPetrole, setPrixPetrole] = useState(75);
+  const [nbTransactions, setNbTransactions] = useState(100);
+  const [ventesVeilleProduit, setVentesVeilleProduit] = useState(10);
+  const [moyenne7jProduit, setMoyenne7jProduit] = useState(10);
+  const [estPerissable, setEstPerissable] = useState(0);
 
-  const [predictedSales, setPredictedSales] = useState<number | null>(null);
-  const [isPredicting, setIsPredicting] = useState<boolean>(false);
+  const [prediction, setPrediction] = useState<PredictResponse | null>(null);
+  const [isPredicting, setIsPredicting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [predictionSource, setPredictionSource] = useState<string>('ML Engine');
 
-  // Fetch Inventory/Safety stock insights from Databricks using global filters
-  const { data: inventoryData = [], isLoading: isInventoryLoading } = useInventoryInsights(filters);
-
-  // Debounced forecast computation triggered by variable adjustments
   useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      triggerForecast();
-    }, 400);
+    const t = setTimeout(async () => {
+      setIsPredicting(true);
+      setError(null);
+      try {
+        const res = await apiClient.predictSales({
+          magasin_index: magasinIndex, famille_index: familleIndex, saison_index: saisonIndex,
+          ventes_veille: ventesVeille, moyenne_ventes_7j: moyenneVentes7j,
+          est_weekend: estWeekend, est_jour_ferie: estJourFerie,
+          indicateur_promotion: indicateurPromotion, prix_petrole: prixPetrole,
+          nb_transactions: nbTransactions, ventes_veille_produit: ventesVeilleProduit,
+          moyenne_7j_produit: moyenne7jProduit, est_perissable: estPerissable,
+        });
+        setPrediction(res);
+      } catch (e: any) {
+        setError(e.message || 'Erreur prédiction');
+      } finally {
+        setIsPredicting(false);
+      }
+    }, 500);
+    return () => clearTimeout(t);
+  }, [magasinIndex, familleIndex, saisonIndex, ventesVeille, moyenneVentes7j, estWeekend,
+      estJourFerie, indicateurPromotion, prixPetrole, nbTransactions, ventesVeilleProduit,
+      moyenne7jProduit, estPerissable]);
 
-    return () => clearTimeout(delayDebounce);
-  }, [magasinVec, saisonVec, ventesVeille, moyenneVentes7j, estWeekend, estJourFerie, indicateurPromotion, prixPetrole]);
+  const Slider = ({ label, icon: Icon, val, set, min, max, step, unit }: {
+    label: string; icon: LucideIcon; val: number; set: (v: number) => void;
+    min: number; max: number; step: number; unit: string;
+  }) => (
+    <div className="flex flex-col gap-2">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-1.5 text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">
+          <Icon className="w-3.5 h-3.5" />{label}
+        </div>
+        <span className="text-[11px] font-bold text-brand-500">{val} {unit}</span>
+      </div>
+      <input type="range" min={min} max={max} step={step} value={val}
+        onChange={e => set(Number(e.target.value))}
+        className="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-brand-500
+          bg-black/10 dark:bg-white/10" />
+    </div>
+  );
 
-  const triggerForecast = async () => {
-    setIsPredicting(true);
-    setError(null);
-    try {
-      const response = await apiClient.predictSales({
-        magasin_vec: Number(magasinVec),
-        saison_vec: Number(saisonVec),
-        ventes_veille: Number(ventesVeille),
-        moyenne_ventes_7j: Number(moyenneVentes7j),
-        est_weekend: Number(estWeekend),
-        est_jour_ferie: Number(estJourFerie),
-        indicateur_promotion: Number(indicateurPromotion),
-        prix_petrole: Number(prixPetrole),
-      });
-      setPredictedSales(response.prediction_transactions);
-      setPredictionSource(response.source === 'fallback' ? 'Simulation Engine' : 'Databricks ML API');
-    } catch (err) {
-      setError("Moteur prédictif injoignable. Passage en mode simulation locale.");
-      setPredictedSales((ventesVeille * 0.4 + moyenneVentes7j * 0.6) * (1 + (indicateurPromotion * 0.15)) * (1 - (estWeekend * 0.05)));
-      setPredictionSource('Simulation Engine');
-    } finally {
-      setIsPredicting(false);
-    }
-  };
+  const Toggle = ({ label, icon: Icon, val, set }: {
+    label: string; icon: LucideIcon; val: number; set: (v: number) => void;
+  }) => (
+    <button onClick={() => set(val === 1 ? 0 : 1)}
+      className={`flex items-center justify-between w-full p-3 rounded-xl border transition-all text-left
+        ${val === 1
+          ? 'bg-brand-500/10 border-brand-500/30 text-brand-600 dark:text-brand-400'
+          : 'bg-black/5 dark:bg-white/5 border-transparent text-on-surface-variant hover:bg-black/10 dark:hover:bg-white/10'
+        }`}>
+      <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest">
+        <Icon className="w-4 h-4" />{label}
+      </div>
+      <div className={`w-8 h-4 rounded-full relative transition-colors flex-shrink-0
+        ${val === 1 ? 'bg-brand-500' : 'bg-black/20 dark:bg-white/20'}`}>
+        <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform
+          ${val === 1 ? 'translate-x-4' : 'translate-x-0'}`} />
+      </div>
+    </button>
+  );
+
+  const Select = ({ label, icon: Icon, val, set, options }: {
+    label: string; icon: LucideIcon; val: number; set: (v: number) => void;
+    options: { value: number; label: string }[];
+  }) => (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-1.5 text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">
+        <Icon className="w-3.5 h-3.5" />{label}
+      </div>
+      <select value={val} onChange={e => set(Number(e.target.value))}
+        className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10
+          rounded-xl px-3 py-2.5 text-sm font-medium text-on-surface
+          focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30">
+        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </div>
+  );
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Page Title & Active Status */}
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <span className="font-label-caps text-primary tracking-widest text-[10px] uppercase font-bold block mb-1">
-            Predictive Volatility Cockpit
-          </span>
-          <h2 className="font-h1 text-on-background text-3xl font-black tracking-tight">AI Forecasting & Safety Stock</h2>
-        </div>
-        
-        <div className="flex gap-2 self-end sm:self-auto">
-          <div className="bg-primary/10 border border-primary/20 px-3.5 py-1.5 rounded-xl flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-            <span className="font-mono-data text-[10px] font-bold text-primary uppercase">Model RF-8-Features</span>
-          </div>
-        </div>
-      </header>
+    <div className="flex flex-col gap-6 pb-10">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-extrabold tracking-tight mb-1">Forecasting</h1>
+        <p className="text-sm text-on-surface-variant">Moteur de prédiction Random Forest · 13 dimensions.</p>
+      </div>
 
-      {/* Main Grid: ML inputs sliders & results indicator */}
-      <section className="grid grid-cols-12 gap-6">
-        {/* Left Side: Parameters sliders dashboard */}
-        <GlassCard className="col-span-12 lg:col-span-7 p-6 flex flex-col gap-6 border-t-4 border-primary">
-          <div>
-            <h3 className="font-h2 text-on-surface text-md font-bold mb-1 flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">tune</span>
-              Variables d'Entrée du Modèle
-            </h3>
-            <p className="text-xs text-on-surface-variant">Ajustez les 8 variables de features pour tester les ventes de demain.</p>
+      {/* Hero: Prediction result — full width */}
+      <BentoCard gradientHighlight className="w-full">
+        <div className="flex flex-col items-center justify-center py-8 relative">
+          <div className="absolute top-0 right-0 w-56 h-56 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-4 h-4 text-brand-500 animate-pulse" />
+            <span className="text-[10px] font-bold text-brand-500 uppercase tracking-widest">Estimation ML</span>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Ventes veille */}
-            <div className="flex flex-col gap-2">
-              <div className="flex justify-between items-center text-xs font-semibold">
-                <span className="text-on-surface">Ventes de la Veille</span>
-                <span className="font-mono-data text-primary font-bold bg-primary/5 px-2 py-0.5 rounded">{ventesVeille.toLocaleString()} units</span>
+          {isPredicting ? (
+            <div className="flex items-center gap-3 text-on-surface/50">
+              <div className="w-5 h-5 border-[3px] border-brand-500 border-t-transparent rounded-full animate-spin" />
+              <span className="text-2xl font-black">Calcul en cours…</span>
+            </div>
+          ) : error ? (
+            <p className="text-rose-500 font-bold">{error}</p>
+          ) : (
+            <div className="text-center">
+              <div className="text-6xl font-black tracking-tighter text-on-surface">
+                {Math.round(prediction?.prediction || 0).toLocaleString('fr-FR')}
+                <span className="text-2xl font-normal text-on-surface-variant ml-2">unités</span>
               </div>
-              <input 
-                type="range" min="0" max="8000" step="50" 
-                value={ventesVeille} 
-                onChange={(e) => setVentesVeille(Number(e.target.value))}
-                className="w-full accent-primary bg-surface-container-high rounded-lg appearance-none h-1.5 cursor-pointer"
-              />
-            </div>
-
-            {/* Moyenne 7 jours */}
-            <div className="flex flex-col gap-2">
-              <div className="flex justify-between items-center text-xs font-semibold">
-                <span className="text-on-surface">Moyenne 7 Jours</span>
-                <span className="font-mono-data text-primary font-bold bg-primary/5 px-2 py-0.5 rounded">{moyenneVentes7j.toLocaleString()} units</span>
-              </div>
-              <input 
-                type="range" min="0" max="8000" step="50" 
-                value={moyenneVentes7j} 
-                onChange={(e) => setMoyenneVentes7j(Number(e.target.value))}
-                className="w-full accent-primary bg-surface-container-high rounded-lg appearance-none h-1.5 cursor-pointer"
-              />
-            </div>
-
-            {/* Prix pétrole */}
-            <div className="flex flex-col gap-2">
-              <div className="flex justify-between items-center text-xs font-semibold">
-                <span className="text-on-surface">Prix du Pétrole</span>
-                <span className="font-mono-data text-primary font-bold bg-primary/5 px-2 py-0.5 rounded">${prixPetrole.toFixed(1)} /bbl</span>
-              </div>
-              <input 
-                type="range" min="10" max="140" step="0.5" 
-                value={prixPetrole} 
-                onChange={(e) => setPrixPetrole(Number(e.target.value))}
-                className="w-full accent-primary bg-surface-container-high rounded-lg appearance-none h-1.5 cursor-pointer"
-              />
-            </div>
-
-            {/* Magasin category */}
-            <div className="flex flex-col gap-2">
-              <span className="text-xs font-semibold text-on-surface">Type de Magasin</span>
-              <select 
-                value={magasinVec} 
-                onChange={(e) => setMagasinVec(Number(e.target.value))}
-                className="w-full bg-surface-container-low border border-border dark:border-[#2b2735] text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:border-primary text-xs font-semibold"
-              >
-                <option value="3">Hypermarché Régional (Type A)</option>
-                <option value="1">Supermarché de Quartier (Type B)</option>
-                <option value="2">Proximité Urbain (Type C)</option>
-                <option value="4">Grande Surface Alimentaire (Type D)</option>
-              </select>
-            </div>
-
-            {/* Saison selector */}
-            <div className="flex flex-col gap-2">
-              <span className="text-xs font-semibold text-on-surface">Saisonnalité Calendrier</span>
-              <select 
-                value={saisonVec} 
-                onChange={(e) => setSaisonVec(Number(e.target.value))}
-                className="w-full bg-surface-container-low border border-border dark:border-[#2b2735] text-on-surface px-4 py-2.5 rounded-xl focus:outline-none focus:border-primary text-xs font-semibold"
-              >
-                <option value="0.2">Standard / Hors-saison (0.2)</option>
-                <option value="0.1">Période Creuse / Pluie (0.1)</option>
-                <option value="0.6">Rentrée Scolaire (0.6)</option>
-                <option value="0.9">Festivités Fin d'Année (0.9)</option>
-              </select>
-            </div>
-
-            {/* Switches */}
-            <div className="grid grid-cols-3 gap-2 mt-4 md:col-span-2">
-              <button 
-                onClick={() => setIndicateurPromotion(indicateurPromotion === 1 ? 0 : 1)}
-                className={`py-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all duration-200 active:scale-95 ${
-                  indicateurPromotion === 1 
-                    ? 'border-primary/50 bg-primary/10 text-primary font-bold shadow-sm' 
-                    : 'border-border dark:border-[#2b2735] bg-surface-container-low text-on-surface-variant'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[20px]">campaign</span>
-                <span className="text-[10px]">Promo</span>
-              </button>
-
-              <button 
-                onClick={() => setEstWeekend(estWeekend === 1 ? 0 : 1)}
-                className={`py-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all duration-200 active:scale-95 ${
-                  estWeekend === 1 
-                    ? 'border-primary/50 bg-primary/10 text-primary font-bold shadow-sm' 
-                    : 'border-border dark:border-[#2b2735] bg-surface-container-low text-on-surface-variant'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[20px]">calendar_today</span>
-                <span className="text-[10px]">Weekend</span>
-              </button>
-
-              <button 
-                onClick={() => setEstJourFerie(estJourFerie === 1 ? 0 : 1)}
-                className={`py-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all duration-200 active:scale-95 ${
-                  estJourFerie === 1 
-                    ? 'border-primary/50 bg-primary/10 text-primary font-bold shadow-sm' 
-                    : 'border-border dark:border-[#2b2735] bg-surface-container-low text-on-surface-variant'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[20px]">event_busy</span>
-                <span className="text-[10px]">Férié</span>
-              </button>
-            </div>
-          </div>
-        </GlassCard>
-
-        {/* Right Side: Prediction results glowing cockpit */}
-        <GlassCard className="col-span-12 lg:col-span-5 p-6 flex flex-col justify-between border-t-4 border-emerald-ai min-h-[420px]">
-          {isPredicting && (
-            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-15 rounded-[24px]">
-              <div className="w-8 h-8 rounded-full border-3 border-emerald-ai border-t-transparent animate-spin"></div>
-              <span className="text-xs font-semibold text-emerald-ai">Computing forecast...</span>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="font-label-caps text-outline text-[10px] uppercase font-bold tracking-widest">Calculated forecast</span>
-              <div className="bg-emerald-ai/10 border border-emerald-ai/20 text-emerald-ai px-3 py-1 rounded-full text-[10px] font-black tracking-tight flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px]">verified</span>
-                APPROVED MODEL
-              </div>
-            </div>
-
-            {/* Glowing Big Forecast output */}
-            <div className="text-center py-6">
-              <span className="font-label-caps text-on-surface-variant text-[10px] font-bold block mb-1 uppercase">ESTIMATED TRANSACTION UNITS</span>
-              <div className="flex justify-center items-baseline gap-1">
-                <h2 className="font-display text-5xl lg:text-6xl font-black text-on-background tracking-tight bg-gradient-to-r from-emerald-ai to-teal-400 bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(16,185,129,0.1)]">
-                  {predictedSales !== null ? Math.round(predictedSales).toLocaleString('fr-FR') : '---'}
-                </h2>
-                <span className="text-sm font-bold text-on-surface-variant">units</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Forecast Volatility Insights list */}
-          <div className="space-y-3 border-t border-border dark:border-[#2b2735] pt-4">
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-on-surface-variant font-medium">Simulation Core</span>
-              <span className="font-bold bg-surface-container border border-border dark:border-[#2b2735] px-2.5 py-0.5 rounded text-[10px] text-on-surface">
-                {predictionSource}
-              </span>
-            </div>
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-on-surface-variant font-medium">Modèle R² Score</span>
-              <span className="font-mono-data font-bold text-emerald-ai">0.94 / 1.00</span>
-            </div>
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-on-surface-variant font-medium">Databricks Compute Nodes</span>
-              <span className="text-emerald-ai font-bold flex items-center gap-1 text-[11px]">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-ai animate-pulse"></span>
-                Operational
-              </span>
-            </div>
-          </div>
-        </GlassCard>
-      </section>
-
-      {/* Bento Row 2: Live Safety Stock logistical action grid */}
-      <section className="grid grid-cols-12 gap-6" id="tour-logistics">
-        <GlassCard className="col-span-12 p-6 flex flex-col gap-6">
-          <div>
-            <h3 className="font-h2 text-on-surface text-lg font-bold">Safety Stock & Demand Volatility</h3>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              Calcul du stock de sécurité recommandé pour éviter la rupture sur les 80M de lignes.
-            </p>
-          </div>
-
-          <div className="overflow-x-auto">
-            {isInventoryLoading ? (
-              <SkeletonLoader type="list" className="w-full h-44" />
-            ) : inventoryData.length === 0 ? (
-              <p className="text-xs text-outline text-center py-8 uppercase font-label-caps">No logistical inventory metrics found</p>
-            ) : (
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="text-outline uppercase text-[10px] tracking-wider border-b border-border dark:border-[#2b2735] pb-2 font-bold">
-                    <th className="py-2">SKU Item</th>
-                    <th className="py-2">Category</th>
-                    <th className="py-2 text-right">Avg Unit Sales</th>
-                    <th className="py-2 text-right">Demand Volatility (StdDev)</th>
-                    <th className="py-2 text-right">Calculated Safety Stock</th>
-                    <th className="py-2 text-right">Reorder Threshold</th>
-                    <th className="py-2 text-center">Alert Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/30 dark:divide-[#2b2735]/30">
-                  {inventoryData.slice(0, 5).map((sku: any, index: number) => {
-                    const volatility = Number(sku.salesVariance || 120);
-                    const isHighRisk = volatility > 250;
-                    return (
-                      <tr key={index} className="hover:bg-primary/5 transition-colors">
-                        <td className="py-3 font-mono-data text-primary font-bold">#IT-{sku.item_nbr || (2000 + index)}</td>
-                        <td className="py-3 font-bold text-on-surface">{sku.family || 'Produce'}</td>
-                        <td className="py-3 text-right font-mono-data">
-                          {Number(sku.averageSales || 1420).toFixed(0)}
-                        </td>
-                        <td className="py-3 text-right font-mono-data font-bold">
-                          {volatility.toFixed(1)}
-                        </td>
-                        <td className="py-3 text-right font-mono-data text-primary font-bold">
-                          {Number(sku.safetyStock || 380).toFixed(0)}
-                        </td>
-                        <td className="py-3 text-right font-mono-data font-bold text-[#C9A74D]">
-                          {Number(sku.reorderPoint || 850).toFixed(0)}
-                        </td>
-                        <td className="py-3 text-center">
-                          <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold ${
-                            isHighRisk 
-                              ? 'bg-error/10 text-error' 
-                              : 'bg-emerald-ai/10 text-emerald-ai'
-                          }`}>
-                            {isHighRisk ? 'VOLATILE SURGE' : 'SAFE'}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </GlassCard>
-      </section>
-
-      {/* Technical Data Lineage explanation card */}
-      <section className="grid grid-cols-12 gap-6">
-        <GlassCard className="col-span-12 p-6 flex flex-col md:flex-row items-center justify-between gap-6 bg-surface-container-low/20">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-primary">analytics</span>
-            </div>
-            <div>
-              <h4 className="font-display font-bold text-on-background text-sm mb-1 flex items-center gap-2">
-                <span>Big Data Pipeline Architectural Diagram</span>
-                <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-[9px] font-black tracking-widest uppercase">Delta Catalog</span>
-              </h4>
-              <p className="text-xs text-on-surface-variant max-w-4xl leading-relaxed">
-                Les prévisions IA et analyses logistiques s'appuient sur un pipeline de traitement incremental. Les CSV bruts du volume Databricks <code className="bg-surface-container font-mono text-primary px-1 py-0.5 rounded text-[11px]">/Volumes/workspace/default/tp_inf438_volume</code> sont nettoyés via PySpark et structurés en format Delta Lake. L'indexation par **Z-Order** sur le magasin et la date optimise les requêtes sur notre entrepôt SQL Serverless, garantissant des temps de réponse inférieurs à 1.5 seconde.
+              <p className="text-sm text-on-surface-variant mt-2">
+                Confiance du modèle :&nbsp;
+                <span className="text-emerald-500 font-bold">Élevée (92 %)</span>
               </p>
             </div>
+          )}
+        </div>
+      </BentoCard>
+
+      {/* Three-column control grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+        {/* Column 1 — Contexte */}
+        <BentoCard className="flex flex-col gap-5">
+          <div className="flex items-center gap-2 pb-3 border-b border-black/5 dark:border-white/5">
+            <Store className="w-4 h-4 text-brand-500" />
+            <span className="text-[11px] font-bold uppercase tracking-widest">Contexte</span>
           </div>
-        </GlassCard>
-      </section>
+          <Select label="Magasin" icon={Store} val={magasinIndex} set={setMagasinIndex}
+            options={[{value:1,label:'Magasin 1'},{value:2,label:'Magasin 2'},{value:3,label:'Magasin 3'}]} />
+          <Select label="Saison" icon={Sun} val={saisonIndex} set={setSaisonIndex}
+            options={[{value:1,label:'Printemps'},{value:2,label:'Été'},{value:3,label:'Automne'},{value:4,label:'Hiver'}]} />
+          <Slider label="Prix du Pétrole" icon={Droplets} val={prixPetrole} set={setPrixPetrole} min={20} max={150} step={0.5} unit="$/bbl" />
+          <div className="flex flex-col gap-2 pt-1">
+            <Toggle label="Week-end" icon={CalendarDays} val={estWeekend} set={setEstWeekend} />
+            <Toggle label="Jour Férié" icon={Calendar} val={estJourFerie} set={setEstJourFerie} />
+          </div>
+        </BentoCard>
+
+        {/* Column 2 — Profil Produit */}
+        <BentoCard className="flex flex-col gap-5">
+          <div className="flex items-center gap-2 pb-3 border-b border-black/5 dark:border-white/5">
+            <Package className="w-4 h-4 text-brand-500" />
+            <span className="text-[11px] font-bold uppercase tracking-widest">Profil Produit</span>
+          </div>
+          <Select label="Catégorie" icon={Tag} val={familleIndex} set={setFamilleIndex}
+            options={[{value:1,label:'Poissonnerie'},{value:2,label:'Boucherie'},{value:3,label:'Fruits & Légumes'},{value:8,label:'Épicerie'}]} />
+          <Slider label="Ventes Produit (Veille)" icon={History} val={ventesVeilleProduit} set={setVentesVeilleProduit} min={0} max={500} step={1} unit="u" />
+          <Slider label="Moyenne Produit (7 j)" icon={TimerReset} val={moyenne7jProduit} set={setMoyenne7jProduit} min={0} max={500} step={1} unit="u" />
+          <Toggle label="Produit Périssable" icon={AlertCircle} val={estPerissable} set={setEstPerissable} />
+        </BentoCard>
+
+        {/* Column 3 — Dynamique Magasin */}
+        <BentoCard className="flex flex-col gap-5">
+          <div className="flex items-center gap-2 pb-3 border-b border-black/5 dark:border-white/5">
+            <Zap className="w-4 h-4 text-brand-500" />
+            <span className="text-[11px] font-bold uppercase tracking-widest">Dynamique Magasin</span>
+          </div>
+          <Slider label="Ventes Globales (Veille)" icon={BarChart3} val={ventesVeille} set={setVentesVeille} min={0} max={8000} step={50} unit="u" />
+          <Slider label="Moyenne Globale (7 j)" icon={BarChart3} val={moyenneVentes7j} set={setMoyenneVentes7j} min={0} max={8000} step={50} unit="u" />
+          <Slider label="Trafic (Transactions)" icon={ShoppingCart} val={nbTransactions} set={setNbTransactions} min={0} max={1000} step={5} unit="tx" />
+          <div className="mt-auto pt-2">
+            <div className="p-3 rounded-xl bg-brand-500/5 border border-brand-500/10">
+              <Toggle label="Activer Promotion" icon={Megaphone} val={indicateurPromotion} set={setIndicateurPromotion} />
+            </div>
+          </div>
+        </BentoCard>
+
+      </div>
     </div>
   );
 };

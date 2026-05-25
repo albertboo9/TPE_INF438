@@ -19,6 +19,8 @@ import { AuthService } from './application/use-cases/AuthService';
 // Infrastructure
 import { DatabricksRepository } from './infrastructure/adapters/persistence/databricks/DatabricksRepository';
 import { MockDatabricksRepository } from './infrastructure/adapters/persistence/databricks/MockDatabricksRepository';
+import { MongoDbMockRepository } from './infrastructure/adapters/persistence/mongodb/MongoDbMockRepository';
+import { MongoConnectionService } from './infrastructure/adapters/persistence/mongodb/MongoConnectionService';
 import { JwtStrategy } from './infrastructure/adapters/security/JwtStrategy';
 import { CacheConfigModule } from './cache/cache.module';
 
@@ -34,26 +36,66 @@ import { GlobalExceptionFilter } from './presentation/filters/GlobalExceptionFil
 import { ResponseInterceptor } from './presentation/interceptors/ResponseInterceptor';
 
 /**
- * Factory provider that tries Databricks first.
- * If Databricks is unavailable (quota, network, credentials), 
- * it automatically falls back to Mock data so the app never crashes on startup.
+ * Three-layer fallback strategy:
+ * 1. Databricks SQL Warehouse (live data)
+ * 2. MongoDB pre-aggregated data (from CSV files via ingestion script)
+ * 3. Static hardcoded mock data (last resort)
  */
 const repositoryProvider: Provider = {
   provide: IStatsRepository,
   useFactory: async () => {
-    const databricks = new DatabricksRepository();
-    // Attempt connection — onModuleInit is called by NestJS lifecycle,
-    // but we pre-connect here to decide which provider to use
-    try {
-      await databricks.onModuleInit();
-      if (databricks.isConnected) {
-        console.log('🔌 Using Databricks SQL Warehouse (live data)');
-        return databricks;
+    const primarySource = process.env.PRIMARY_DATA_SOURCE || 'databricks';
+    
+    // Helper instantiators
+    const tryDatabricks = async () => {
+      const databricks = new DatabricksRepository();
+      try {
+        await databricks.onModuleInit();
+        if (databricks.isConnected) {
+          console.log('🔌🌐 Layer (Databricks): Using Databricks SQL Warehouse (live data)');
+          return databricks;
+        }
+      } catch (e) {
+        console.warn('⚠️ Databricks connection failed:', (e as Error).message);
       }
-    } catch {
-      // Connection failed, fall through to mock
+      return null;
+    };
+
+    const tryMongo = async () => {
+      const mongoService = new MongoConnectionService();
+      try {
+        await mongoService.connect();
+        if (mongoService.isConnected) {
+          console.log('🔌🍃 Layer (MongoDB): Using MongoDB Mock Repository (pre-aggregated CSV data)');
+          return new MongoDbMockRepository(mongoService);
+        }
+      } catch (e) {
+        console.warn('⚠️ MongoDB connection failed:', (e as Error).message);
+      }
+      return null;
+    };
+
+    // Priority logic
+    if (primarySource === 'mongodb') {
+      console.log('🔄 PRIMARY_DATA_SOURCE is mongodb. Attempting MongoDB first...');
+      const repo = await tryMongo();
+      if (repo) return repo;
+      
+      console.log('⚠️ MongoDB failed, falling back to Databricks...');
+      const fallbackRepo = await tryDatabricks();
+      if (fallbackRepo) return fallbackRepo;
+    } else {
+      console.log('🔄 PRIMARY_DATA_SOURCE is databricks (or default). Attempting Databricks first...');
+      const repo = await tryDatabricks();
+      if (repo) return repo;
+      
+      console.log('⚠️ Databricks failed, falling back to MongoDB...');
+      const fallbackRepo = await tryMongo();
+      if (fallbackRepo) return fallbackRepo;
     }
-    console.log('📦 Using MockDatabricksRepository (demo/fallback data)');
+
+    // Static fallback
+    console.log('📦⚠️ Layer 3: Using Static MockDatabricksRepository (hardcoded fallback)');
     return new MockDatabricksRepository();
   },
 };
@@ -91,6 +133,9 @@ const repositoryProvider: Provider = {
     // Infrastructure
     JwtStrategy,
     AuthService,
+    // MongoDB connection service (also registered for DI)
+    MongoConnectionService,
+    MongoDbMockRepository,
   ],
 })
 export class AppModule {

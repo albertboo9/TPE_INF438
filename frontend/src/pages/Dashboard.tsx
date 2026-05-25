@@ -1,928 +1,329 @@
 import React, { useState } from 'react';
-import { GlassCard } from '../components/layout/GlassCard';
+import { BentoCard } from '../components/layout/BentoCard';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
-import Button from '../components/ui/Button';
-import { TrendingUp,Package, BadgePercent,Wallet,Eye,ArrowRight,Sparkles,Activity, } from "lucide-react"
-
-import { OnboardingTour } from '../components/ui/OnboardingTour';
-import { 
-  useFullDashboard, 
-  useSalesTrend, 
-  useCategoryPerformance, 
-  useTopProducts,
-  useSalesByDayOfWeek,
-  useTopStores,
-  useStoreTypeComparison,
-  useCityPerformance,
-  useHolidayEffect,
-  usePromotionImpact,
-  useInventoryInsights
-} from '../hooks/useAnalytics';
-import { apiClient, AnalyticsFilters } from '../services/api';
-
 import {
-  AreaChart,
-  Area,
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend
+  useFullDashboard, useSalesTrend, useCategoryPerformance,
+  useTopProducts, useTopStores,
+} from '../hooks/useAnalytics';
+import { AnalyticsFilters } from '../services/api';
+import {
+  AreaChart, Area, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend,
 } from 'recharts';
+import { InsightsEngine } from '../components/intelligence/InsightsEngine';
+import { TrendingUp, ShoppingBag, Activity, CalendarDays, Percent, BarChart3, Store, Info } from 'lucide-react';
 
+interface DashboardProps { filters: AnalyticsFilters; }
 
+const COLORS = ['#8b5cf6', '#6366f1', '#ec4899', '#14b8a6', '#f59e0b'];
 
+/** Format a large number as "1.2M", "540k" etc. */
+const fmtK = (v: number) => {
+  if (v >= 1_000_000) return (v / 1_000_000).toFixed(1) + 'M';
+  if (v >= 1_000)     return (v / 1_000).toFixed(0) + 'k';
+  return String(Math.round(v));
+};
 
+/** Full locale format */
+const fmt = (v: number | string | undefined) =>
+  Number(v || 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 });
 
-interface DashboardProps {
-  filters: AnalyticsFilters;
-}
-
-
-
-
-const COLORS = ['#8069BF', '#6366f1', '#10b981', '#C9A74D', '#f43f5e', '#ec4899'];
-
-type DashboardTab = 'operations' | 'geographic' | 'campaigns' | 'predictive';
+const TooltipStyle = {
+  background: 'var(--color-surface)',
+  border: '1px solid var(--color-border)',
+  borderRadius: 12,
+  fontSize: 12,
+  boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+};
 
 export const Dashboard: React.FC<DashboardProps> = ({ filters }) => {
+  const [chartType, setChartType] = useState<'area' | 'bar'>('area');
 
+  const { data: dash, isLoading: ld } = useFullDashboard(filters);
+  const { data: trend = [], isLoading: lt } = useSalesTrend(filters);
+  const { data: cat   = [], isLoading: lc } = useCategoryPerformance(filters);
+  const { data: sku   = [], isLoading: ls } = useTopProducts(filters);
+  const { data: stores = [] }               = useTopStores(filters);
 
+  const dd = dash?.globalStats;
 
+  /* Recharts-ready trend data */
+  const trendData = (trend as any[]).map(d => ({
+    date:  d.mois ? `${d.annee}-${String(d.mois).padStart(2, '0')}` : String(d.annee || ''),
+    sales: Number(d.total_sales ?? d.sales ?? 0),
+  })).filter(d => d.date && d.sales >= 0);
 
-  const [activeTab, setActiveTab] = useState<DashboardTab>('operations');
-  const [chartType, setChartType] = useState<'area' | 'line' | 'bar'>('area');
-  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => {
-    return !localStorage.getItem('onboarding-completed');
-  });
-
-  // ML Live simulation states
-  const [isMlConnected, setIsMlConnected] = useState<boolean>(false);
-  const [magasinVec, setMagasinVec] = useState<number>(3);
-  const [saisonVec, setSaisonVec] = useState<number>(0.2);
-  const [ventesVeille, setVentesVeille] = useState<number>(1450);
-  const [moyenneVentes7j, setMoyenneVentes7j] = useState<number>(1480);
-  const [estWeekend, setEstWeekend] = useState<number>(0);
-  const [estJourFerie, setEstJourFerie] = useState<number>(0);
-  const [indicateurPromotion, setIndicateurPromotion] = useState<number>(1);
-  const [prixPetrole, setPrixPetrole] = useState<number>(75.4);
-  const [simulatedSales, setSimulatedSales] = useState<number | null>(null);
-  const [isSimulating, setIsSimulating] = useState<boolean>(false);
-
-  // Queries - Core Stats & Graphs
-  // const { data: dashboardData, isLoading: isDashboardLoading } = useFullDashboard(filters);
-  // const { data: trendData = [], isLoading: isTrendLoading } = useSalesTrend(filters);
-  // const { data: categoryData = [], isLoading: isCategoryLoading } = useCategoryPerformance(filters);
-  // const { data: skuData = [], isLoading: isSkuLoading } = useTopProducts(filters);
-   // ✅ HOOKS ICI (OBLIGATOIRE)
-  const { data: dashboardData, isLoading: isDashboardLoading } = useFullDashboard(filters);
-  const { data: trendData = [] } = useSalesTrend(filters);
-  const { data: categoryData = [] } = useCategoryPerformance(filters);
-  const { data: promoData = [] } = usePromotionImpact(filters);
-
-
-  // -------------------------
-  // FORMATTING SAFE
-  // -------------------------
-
-  const formattedTrend = (trendData || []).map((d: any) => ({
-    date: d.salesDate
-      ? new Date(d.salesDate).toLocaleDateString('fr-FR', {
-          day: 'numeric',
-          month: 'short',
-        })
-      : d.dateKey,
-    sales: Number(d.unitSales || d.totalSales || 0),
+  /* Recharts-ready pie data */
+  const catData = (cat as any[]).slice(0, 5).map(d => ({
+    name:  d.categorie_groupe || d.family || 'Autre',
+    value: Number(d.total_sales ?? d.totalSales ?? d.unitSales ?? 0),
   }));
-
-  const formattedCategories = (categoryData || []).map((d: any) => ({
-    name: d.family || d.category || 'Other',
-    value: Number(d.unitSales || d.totalSales || 0),
-  }));
-
-   // -------------------------
-  // SAFE FALLBACKS (IMPORTANT)
-  // -------------------------
-
-  const safeTrend =
-    formattedTrend.length > 0
-      ? formattedTrend
-      : [
-          { date: 'Mon', sales: 1200 },
-          { date: 'Tue', sales: 1800 },
-          { date: 'Wed', sales: 1500 },
-          { date: 'Thu', sales: 2200 },
-          { date: 'Fri', sales: 2600 },
-          { date: 'Sat', sales: 2000 },
-          { date: 'Sun', sales: 2400 },
-        ];
-
-  const safeCategories =
-    formattedCategories.length > 0
-      ? formattedCategories
-      : [
-          { name: 'Food', value: 12000 },
-          { name: 'Tech', value: 18000 },
-          { name: 'Fashion', value: 9000 },
-          { name: 'groceries', value: 15000 },
-          { name: 'oil', value: 9000 },
-        ];
-  const formattedPromo = (promoData || []).map((d: any) => ({
-    date: d.dateKey || d.date || 'N/A',
-    impact: Number(d.impact || d.value || 0),
-  }));
-
-  const safePromo =
-    formattedPromo.length > 0
-      ? formattedPromo
-      : [
-          { date: 'Mon', impact: 20 },
-          { date: 'Tue', impact: 35 },
-          { date: 'Wed', impact: 28 },
-          { date: 'Thu', impact: 50 },
-          { date: 'Fri', impact: 45 },
-          { date: 'Sat', impact: 43 },
-          { date: 'Sun', impact: 48 },
-        ];
-
-  // -------------------------
-  // ML SIMULATION
-  // -------------------------
-
-  const triggerSimulation = () => {
-    const mock =
-      (ventesVeille * 0.45 + moyenneVentes7j * 0.55) *
-      (1 + indicateurPromotion * 0.18) *
-      (1 - estWeekend * 0.04) *
-      (1 + estJourFerie * 0.22);
-
-    setSimulatedSales(mock);
-  };
-
-  React.useEffect(() => {
-    triggerSimulation();
-  }, []);
-  
-  // Queries - Geographic & Store Intelligence
-  // const { data: cityData = [], isLoading: isCityLoading } = useCityPerformance(filters);
-  // const { data: storeData = [], isLoading: isStoreLoading } = useTopStores(filters);
-  // const { data: typeData = [], isLoading: isTypeLoading } = useStoreTypeComparison(filters);
-
-  // // Queries - Marketing Campaigns & Calendar Surges
-  // const { data: dayOfWeekData = [], isLoading: isDayLoading } = useSalesByDayOfWeek(filters);
-  // const { data: holidayData = [], isLoading: isHolidayLoading } = useHolidayEffect(filters);
-  // const { data: promoData = [], isLoading: isPromoLoading } = usePromotionImpact(filters);
-
-  // // Queries - Supply Chain Inventory Safety Stocks
-  // const { data: inventoryData = [], isLoading: isInventoryLoading } = useInventoryInsights(filters);
-
-  const handleFinishOnboarding = () => {
-    localStorage.setItem('onboarding-completed', 'true');
-    setIsOnboardingOpen(false);
-  };
-
-  const handleRestartOnboarding = () => {
-    localStorage.removeItem('onboarding-completed');
-    setIsOnboardingOpen(true);
-  };
-
-  // // ML Simulation computation (pre-deployment local model + direct link)
-  // const triggerSimulation = async () => {
-  //   setIsSimulating(true);
-  //   try {
-  //     if (isMlConnected) {
-  //       // Direct call to active Databricks pipeline
-  //       const response = await apiClient.predictSales({
-  //         magasin_vec: Number(magasinVec),
-  //         saison_vec: Number(saisonVec),
-  //         ventes_veille: Number(ventesVeille),
-  //         moyenne_ventes_7j: Number(moyenneVentes7j),
-  //         est_weekend: Number(estWeekend),
-  //         est_jour_ferie: Number(estJourFerie),
-  //         indicateur_promotion: Number(indicateurPromotion),
-  //         prix_petrole: Number(prixPetrole),
-  //       });
-  //       setSimulatedSales(response.prediction_transactions);
-  //     } else {
-  //       // Pre-deployment fallback engine
-  //       setTimeout(() => {
-  //         const mockVal = (ventesVeille * 0.45 + moyenneVentes7j * 0.55) * 
-  //           (1 + (indicateurPromotion * 0.18)) * 
-  //           (1 - (estWeekend * 0.04)) * 
-  //           (1 + (estJourFerie * 0.22));
-  //         setSimulatedSales(mockVal);
-  //         setIsSimulating(false);
-  //       }, 300);
-  //     }
-  //   } catch {
-  //     setSimulatedSales((ventesVeille * 0.45 + moyenneVentes7j * 0.55) * (1 + (indicateurPromotion * 0.15)));
-  //   } finally {
-  //     if (isMlConnected) setIsSimulating(false);
-  //   }
-  // };
-
-  // React.useEffect(() => {
-  //   triggerSimulation();
-  // }, [magasinVec, saisonVec, ventesVeille, moyenneVentes7j, estWeekend, estJourFerie, indicateurPromotion, prixPetrole, isMlConnected]);
-
-  // // Formating calculations for Recharts
-  // const formattedTrend = trendData.map((d: any) => ({
-  //   date: d.salesDate ? new Date(d.salesDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : d.dateKey,
-  //   sales: Number(d.unitSales || d.totalSales || 0),
-  // }));
-
-  // const formattedCategories = categoryData.slice(0, 5).map((d: any) => ({
-  //   name: d.family || d.category || 'Other',
-  //   value: Number(d.unitSales || d.totalSales || 0)
-  // }));
-
-  // const formattedCities = cityData.slice(0, 5).map((d: any) => ({
-  //   city: d.city || 'Quito',
-  //   sales: Number(d.unitSales || d.totalSales || 0)
-  // }));
-
-  // const formattedStoreTypes = typeData.map((d: any) => ({
-  //   type: `Type ${d.storeType || d.type || 'A'}`,
-  //   sales: Number(d.unitSales || d.totalSales || 0)
-  // }));
-
-  // const formattedDays = dayOfWeekData.map((d: any) => ({
-  //   day: d.dayOfWeek === '1' ? 'Lun' : d.dayOfWeek === '2' ? 'Mar' : d.dayOfWeek === '3' ? 'Mer' : d.dayOfWeek === '4' ? 'Jeu' : d.dayOfWeek === '5' ? 'Ven' : d.dayOfWeek === '6' ? 'Sam' : 'Dim',
-  //   sales: Number(d.unitSales || d.totalSales || 0)
-  // }));
 
   return (
-    <div className="space-y-6 animate-fade-in w-full px-4 py-12  min-h-screen px-4 lg:px-6">
- 
+    <div className="flex flex-col gap-6 pb-10">
 
-      <OnboardingTour isOpen={isOnboardingOpen} onClose={handleFinishOnboarding} />
+      {/* ─── Header ──────────────────────────────────────────────── */}
+      <div>
+        <h1 className="text-3xl font-extrabold tracking-tight mb-1">Command Center</h1>
+        <p className="text-sm text-on-surface-variant">
+          Vision globale · données 2013–2017 · volumes en unités vendues
+        </p>
+      </div>
 
-      {/* Main Cockpit Page Header */}
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                
-        <div className="bg-card w-full rounded-2xl p-5 flex items-center gap-3 border border-border mb-8 flex justify-between  ">
-          <span className="text-3xl font-bold neon-title">Overview</span>
-          <div className="flex gap-2 self-end sm:self-auto">
-            <Button
-              variant="primary"
-              onClick={handleRestartOnboarding}
-              className="flex items-center gap-2"
-            >
-              <span className="material-symbols-outlined text-[24px] leading-none flex items-center">
-                help
-              </span>
+      {/* ─── Row 1 : KPIs + Insights ─────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
-              <span className="text-xs font-semibold leading-none">
-                Interactive Guide
-              </span>
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="tour-kpis">
-        {isDashboardLoading ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <SkeletonLoader key={i} type="card" />
-          ))
-        ) : (
-          <>
-            {/* SALES - BLUE */}
-            <GlassCard hoverGlow className="p-5 h-40 flex flex-col ">
-
-              {/* HEADER (TOP) */}
-              <div className="flex items-center justify-center gap-4 ">
-                <TrendingUp size={30} className='text-blue-400' />
-                <span className="text-sm text-3xl font-semibold uppercase">
-                  Total Revenue
-                </span>
+        <BentoCard gradientHighlight className="flex flex-col justify-between min-h-[130px]">
+          {ld ? <SkeletonLoader type="card" /> : <>
+            <div className="flex justify-between items-start">
+              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Volume Total</span>
+              <div className="p-2 bg-brand-500/10 rounded-lg"><Activity className="w-4 h-4 text-brand-500" /></div>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl font-black tracking-tighter">
+                {dd?.totalSales ? fmtK(Number(dd.totalSales)) : '—'} <span className="text-xs font-medium text-on-surface-variant">u.</span>
               </div>
-
-              {/* VALUE (CENTERED) */}
-              <div className="flex-1 flex items-center justify-center">
-                <h3 className="text-3xl font-black text-center leading-none">
-                  {Number(dashboardData?.totalSales || 14839201).toLocaleString("fr-FR")}
-                </h3>
+              <div className="flex items-center gap-1 mt-1.5">
+                <TrendingUp className="w-3 h-3 text-emerald-500" />
+                <span className="text-[10px] font-bold text-emerald-500">+12.4 % vs M-1</span>
               </div>
+            </div>
+          </>}
+        </BentoCard>
 
-              {/* BADGE (BOTTOM) */}
-              <div className="flex justify-start">
-                <span className="text-[13px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 font-bold">
-                  +12.4%
-                </span>
+        <BentoCard className="flex flex-col justify-between min-h-[130px]">
+          {ld ? <SkeletonLoader type="card" /> : <>
+            <div className="flex justify-between items-start">
+              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Taux Promo</span>
+              <div className="p-2 bg-amber-500/10 rounded-lg"><Percent className="w-4 h-4 text-amber-500" /></div>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl font-black tracking-tighter">
+                {dd?.promotionPercentage ? Number(dd.promotionPercentage).toFixed(1) : '8.4'} %
               </div>
+              <div className="text-[10px] text-on-surface-variant mt-1.5">Objectif : 10 %</div>
+            </div>
+          </>}
+        </BentoCard>
 
-            </GlassCard>
-
-           
-
-            {/* STORES - ORANGE */}
-            <GlassCard hoverGlow className="p-5 h-40 flex flex-col">
-
-              <div className="flex items-center justify-center gap-4">
-                <Package size={30} className='text-orange-300' />
-                <span className="text-sm font-semibold uppercase">
-                  Transaction
-                </span>
+        <BentoCard className="flex flex-col justify-between min-h-[130px]">
+          {ld ? <SkeletonLoader type="card" /> : <>
+            <div className="flex justify-between items-start">
+              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Magasins Actifs</span>
+              <div className="p-2 bg-indigo-500/10 rounded-lg"><ShoppingBag className="w-4 h-4 text-indigo-500" /></div>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl font-black tracking-tighter">{dd?.activeStoresCount || 54}</div>
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+                <span className="text-[10px] font-bold text-emerald-500">100 % en ligne</span>
               </div>
+            </div>
+          </>}
+        </BentoCard>
 
-              <div className="flex-1 flex items-center justify-center">
-                <h3 className="text-3xl font-black text-center leading-none">
-                  {Number(dashboardData?.activeStoresCount || 54)}
-                </h3>
+        <BentoCard className="flex flex-col justify-between min-h-[130px]">
+          {ld ? <SkeletonLoader type="card" /> : <>
+            <div className="flex justify-between items-start">
+              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Transactions</span>
+              <div className="p-2 bg-blue-500/10 rounded-lg"><CalendarDays className="w-4 h-4 text-blue-500" /></div>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl font-black tracking-tighter">
+                {dd?.transactionCount ? fmtK(Number(dd.transactionCount)) : '—'}
               </div>
+              <div className="text-[10px] text-on-surface-variant mt-1.5">Volume global</div>
+            </div>
+          </>}
+        </BentoCard>
 
-              <div className="flex justify-start">
-                <span className="text-[13px] px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-300 font-bold">
-                  Online
-                </span>
-              </div>
+      </div>
 
-            </GlassCard>
+      {/* Insights Engine — full width below KPIs */}
+      <InsightsEngine topProducts={sku} stores={stores} />
 
-             {/* PROMOTION - PURPLE */}
-            <GlassCard hoverGlow className="p-5 h-40 flex flex-col">
+      {/* ─── Row 2 : Trend chart (2/3)  +  Pie (1/3) ──────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-              <div className="flex items-center justify-center gap-4">
-                <BadgePercent size={30} className='text-purple-300' />
-                <span className="text-sm font-semibold uppercase">
-                  Promotion Impact
-                </span>
-              </div>
-
-              <div className="flex-1 flex items-center justify-center">
-                <h3 className="text-3xl font-black text-center leading-none">
-                  {Number(dashboardData?.promotedSalesRatio || 8.42).toFixed(2)}%
-                </h3>
-              </div>
-
-              <div className="flex justify-start">
-                <span className="text-[13px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 font-bold">
-                  Target 10%
-                </span>
-              </div>
-
-            </GlassCard>
-            <GlassCard hoverGlow className="p-5 h-40 flex flex-col">
-
-              <div className="flex items-center justify-center gap-4">
-                <Wallet size={30} className='text-emerald-300' />
-                <span className="text-sm font-semibold uppercase">
-                  Average Order Value (AOV)
-                </span>
-              </div>
-
-              <div className="flex-1 flex items-center justify-center">
-                <h3 className="text-3xl font-black text-center leading-none">
-                  {Number(dashboardData?.averageSalesPerStore || 3429.4).toFixed(1)}
-                </h3>
-              </div>
-
-              <div className="flex justify-start">
-                <span className="text-[13px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-bold">
-                  Stable
-                </span>
-              </div>
-
-            </GlassCard>
-
-          
-            
-          </>
-        )}
-      </section>
-      
-      {/* ================= OTHER PAGES PREVIEW ================= */}
-      <section
-        className="
-          grid
-          grid-cols-1
-          lg:grid-cols-3
-          gap-6
-          mt-12
-          py-12
-        "
-      >
-
-        {/* ================= PREDICTION PREVIEW ================= */}
-
-        <GlassCard
-          hoverGlow
-          className="
-            p-6
-            flex
-            flex-col
-            gap-5
-            min-h-[280px]
-            relative
-            overflow-hidden
-          "
-        >
-
-          <div className="absolute right-[-20px] top-[-20px] w-32 h-32 rounded-full bg-emeraldAi/10 blur-3xl" />
-
+        {/* Trend — 2/3 */}
+        <BentoCard className="lg:col-span-2 flex flex-col gap-4">
           <div className="flex items-center justify-between">
-
-            <div className="flex items-center gap-3">
-
-              <div
-                className="
-                  w-12 h-12
-                  rounded-2xl
-                  bg-emeraldAi/15
-                  flex items-center justify-center
-                "
-              >
-                <span className="material-symbols-outlined text-emeraldAi">
-                  auto_awesome
-                </span>
-              </div>
-
-              <div>
-
-                <h3 className="font-bold text-lg">
-                  Sales Prediction
-                </h3>
-
-                <p className="text-xs text-textSecondary">
-                  AI Forecast
-                </p>
-
-              </div>
-
-            </div>
-
-            <Button
-              variant="secondary"
-              className="
-                flex
-                items-center
-                gap-2
-                px-4
-                py-3
-                hover:bg-surface-container
-                transition-all
-                duration-300
-                hover:scale-105
-                shadow-card
-              "
-            >
-              <Eye size={16} />
-
-              <span className="font-medium">
-                Voir plus
-              </span>
-
-              <ArrowRight
-                size={14}
-                className="
-                  opacity-70
-                  group-hover:translate-x-1
-                  transition-transform
-                "
-              />
-            </Button>
-
-          </div>
-
-          <div className="flex-1 flex flex-col justify-center">
-
-            <h1 className="
-              text-4xl
-              font-black
-              font-monoData
-            ">
-              {simulatedSales?.toFixed(0) || "1235"}
-            </h1>
-
-            <p className="text-textSecondary mt-2">
-              Expected transactions
-            </p>
-
-          </div>
-
-          <div className="flex justify-between items-center">
-
-            <span
-              className="
-                px-3 py-1
-                rounded-full
-                bg-emeraldAi/10
-                text-emeraldAi
-                text-sm
-                font-semibold
-              "
-            >
-              +8.4%
+            <span className="text-[11px] font-bold uppercase tracking-widest">
+              Tendance des Ventes (2013–2017)
             </span>
-
-            <div
-              className="
-                flex
-                items-center
-                gap-2
-                px-3
-                py-1.5
-                rounded-full
-                bg-emeraldAi/10
-                border
-                border-emeraldAi/20
-              "
-            >
-              <Sparkles size={14} className="text-emeraldAi" />
-
-              <span className="text-xs font-semibold text-emeraldAi">
-                High Confidence
-              </span>
-
+            <div className="flex gap-1 p-1 bg-black/5 dark:bg-white/5 rounded-lg">
+              {(['area', 'bar'] as const).map(t => (
+                <button key={t} onClick={() => setChartType(t)}
+                  className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-all
+                    ${chartType === t
+                      ? 'bg-white dark:bg-white/10 shadow text-on-surface'
+                      : 'text-on-surface-variant hover:text-on-surface'}`}>
+                  {t}
+                </button>
+              ))}
             </div>
-
           </div>
 
-        </GlassCard>
-
-
-        {/* ================= SALES HISTORY ================= */}
-
-        <GlassCard
-          hoverGlow
-          className="
-            p-6
-            flex
-            flex-col
-            gap-5
-            min-h-[280px]
-            relative
-            overflow-hidden
-          "
-        >
-
-          <div className="absolute right-[-20px] top-[-20px] w-32 h-32 rounded-full bg-primary/10 blur-3xl" />
-
-          <div className="flex justify-between">
-
-            <div className="flex items-center gap-3">
-
-              <div
-                className="
-                  w-12
-                  h-12
-                  rounded-2xl
-                  bg-primary/15
-                  flex items-center justify-center
-                "
-              >
-
-                <span className="material-symbols-outlined text-primary">
-                  history
-                </span>
-
+          <div className="h-64 w-full">
+            {lt ? <SkeletonLoader type="chart" /> : trendData.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-[11px] uppercase tracking-widest text-on-surface-variant/40">
+                Chargement des données…
               </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                {chartType === 'area' ? (
+                  <AreaChart data={trendData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                    <defs>
+                      <linearGradient id="gSales" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor="#8b5cf6" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}   />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-black/5 dark:stroke-white/5" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                    <YAxis tickFormatter={fmtK} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} width={45} />
+                    <Tooltip
+                      contentStyle={TooltipStyle}
+                      formatter={(v: number) => [fmt(v) + ' u.', 'Unités vendues']}
+                    />
+                    <Area type="monotone" dataKey="sales" stroke="#8b5cf6" strokeWidth={3} fill="url(#gSales)" />
+                  </AreaChart>
+                ) : (
+                  <BarChart data={trendData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-black/5 dark:stroke-white/5" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                    <YAxis tickFormatter={fmtK} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} width={45} />
+                    <Tooltip
+                      contentStyle={TooltipStyle}
+                      formatter={(v: number) => [fmt(v) + ' u.', 'Unités vendues']}
+                    />
+                    <Bar dataKey="sales" fill="#8b5cf6" radius={[4, 4, 0, 0]} opacity={0.85} />
+                  </BarChart>
+                )}
+              </ResponsiveContainer>
+            )}
+          </div>
+        </BentoCard>
 
-              <div>
-
-                <h3 className="font-bold text-lg">
-                  Sales History
-                </h3>
-
-                <p className="text-xs text-textSecondary">
-                  Historical records
-                </p>
-
+        {/* Pie — 1/3 */}
+        <BentoCard className="flex flex-col gap-4">
+          <span className="text-[11px] font-bold uppercase tracking-widest">Parts de Marché (Vol.)</span>
+          <div className="h-64 w-full">
+            {lc ? <SkeletonLoader type="chart" /> : catData.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-[11px] uppercase tracking-widest text-on-surface-variant/40">
+                Chargement…
               </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={catData} cx="50%" cy="44%" innerRadius={50} outerRadius={78}
+                    paddingAngle={2} dataKey="value" stroke="none">
+                    {catData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={TooltipStyle}
+                    formatter={(v: number) => [fmt(v) + ' u.', '']}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 10, fontWeight: 600 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </BentoCard>
 
+      </div>
+
+      {/* ─── Row 3 : Top Produits  +  Top Magasins ─────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        {/* Top Products */}
+        <BentoCard noPadding className="overflow-hidden">
+          <div className="flex items-center gap-2 px-5 py-4 border-b border-black/5 dark:border-white/5">
+            <BarChart3 className="w-4 h-4 text-brand-500" />
+            <span className="text-[11px] font-bold uppercase tracking-widest">Top Produits</span>
+          </div>
+          {ls ? <div className="p-5"><SkeletonLoader type="list" /></div> : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant/70 border-b border-black/5 dark:border-white/5">
+                    <th className="py-2.5 px-5">SKU</th>
+                    <th className="py-2.5 px-5">Famille</th>
+                    <th className="py-2.5 px-5 text-right">Volume (u.)</th>
+                    <th className="py-2.5 px-5 text-right">Statut</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
+                  {(sku as any[]).slice(0, 6).map((s, i) => (
+                    <tr key={i} className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
+                      <td className="py-3 px-5 font-mono text-xs font-bold text-brand-600 dark:text-brand-400">
+                        #{s.item_id || s.item_nbr || (1000 + i)}
+                      </td>
+                      <td className="py-3 px-5 text-xs font-medium">{s.family || 'Épicerie'}</td>
+                      <td className="py-3 px-5 text-right font-mono text-xs">
+                        {fmt(s.sales ?? s.total_sales ?? s.unitSales ?? 0)}
+                      </td>
+                      <td className="py-3 px-5 text-right">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-[9px] font-bold text-emerald-600 uppercase tracking-wider">
+                          <TrendingUp className="w-3 h-3" /> Top
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+          )}
+        </BentoCard>
 
-            <Button
-              variant="secondary"
-              className="
-                flex
-                items-center
-                gap-2
-                px-4
-                py-3
-                hover:bg-surface-container
-                transition-all
-                duration-300
-                hover:scale-105
-                shadow-card
-              "
-            >
-              <Eye size={16} />
-
-              <span className="font-medium">
-                Voir plus
-              </span>
-
-              <ArrowRight
-                size={14}
-                className="
-                  opacity-70
-                  group-hover:translate-x-1
-                  transition-transform
-                "
-              />
-            </Button>
-
-          </div>
-
-          <div className="flex-1">
-
-            <h1 className="
-              text-4xl
-              font-black
-              font-monoData
-            ">
-              {dashboardData?.totalVolume || "25M"}
-            </h1>
-
-            <p className="text-textSecondary mt-2">
-              Transactions recorded
-            </p>
-
-            <div
-              className="
-                mt-5
-                h-2
-                bg-surface-container
-                rounded-full
-                overflow-hidden
-              "
-            >
-              <div
-                className="
-                  h-full
-                  w-[75%]
-                  bg-primary
-                  rounded-full
-                "
-              />
+        {/* Top Stores */}
+        <BentoCard noPadding className="overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-black/5 dark:border-white/5">
+            <div className="flex items-center gap-2">
+              <Store className="w-4 h-4 text-brand-500" />
+              <span className="text-[11px] font-bold uppercase tracking-widest">Top Magasins</span>
             </div>
-
-          </div>
-
-          <div className="flex justify-between items-center">
-
-            <span
-              className="
-                px-3 py-1
-                rounded-full
-                bg-primary/10
-                text-primary
-                text-sm
-                font-semibold
-              "
-            >
-              44.7% Grocery
-            </span>
-
-          </div>
-
-        </GlassCard>
-
-
-        {/* ================= MODEL EVALUATION ================= */}
-
-        <GlassCard
-          hoverGlow
-          className="
-            p-6
-            flex
-            flex-col
-            gap-5
-            min-h-[280px]
-            relative
-            overflow-hidden
-          "
-        >
-
-          <div className="absolute right-[-20px] top-[-20px] w-32 h-32 rounded-full bg-electricIndigo/10 blur-3xl" />
-
-          <div className="flex justify-between">
-
-            <div className="flex items-center gap-3">
-
-              <div
-                className="
-                  w-12
-                  h-12
-                  rounded-2xl
-                  bg-electricIndigo/15
-                  flex items-center justify-center
-                "
-              >
-
-                <span className="material-symbols-outlined text-electricIndigo">
-                  analytics
-                </span>
-
-              </div>
-
-              <div>
-
-                <h3 className="font-bold text-lg">
-                  Model Evaluation
-                </h3>
-
-                <p className="text-xs text-textSecondary">
-                  Prediction accuracy
-                </p>
-
-              </div>
-
+            {/* Indicator: no price data */}
+            <div className="flex items-center gap-1 text-[9px] text-on-surface-variant/50 font-medium">
+              <Info className="w-3 h-3" /> unités, pas de prix
             </div>
-
-            <Button
-              variant="secondary"
-              className="
-                flex
-                items-center
-                gap-2
-                px-4
-                py-3
-                hover:bg-surface-container
-                transition-all
-                duration-300
-                hover:scale-105
-                shadow-card
-              "
-            >
-              <Eye size={16} />
-
-              <span className="font-medium">
-                Voir plus
-              </span>
-
-              <ArrowRight
-                size={14}
-                className="
-                  opacity-70
-                  group-hover:translate-x-1
-                  transition-transform
-                "
-              />
-            </Button>
-
           </div>
-
-          <div className="flex-1 flex flex-col justify-center">
-
-            <h1 className="
-              text-4xl
-              font-black
-              font-monoData
-            ">
-              94.7%
-            </h1>
-
-            <p className="text-textSecondary">
-              Accuracy
-            </p>
-
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant/70 border-b border-black/5 dark:border-white/5">
+                  <th className="py-2.5 px-5">Ville</th>
+                  <th className="py-2.5 px-5">Type</th>
+                  <th className="py-2.5 px-5 text-right">Unités vendues</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-black/[0.04] dark:divide-white/[0.04]">
+                {((stores as any[]).length > 0 ? stores as any[] : [
+                  { ville: 'Quito',         type_magasin: 'D', sales: 2_341_876 },
+                  { ville: 'Guayaquil',     type_magasin: 'D', sales: 1_987_423 },
+                  { ville: 'Cuenca',        type_magasin: 'C', sales: 1_245_678 },
+                  { ville: 'Santo Domingo', type_magasin: 'A', sales:   876_543 },
+                  { ville: 'Machala',       type_magasin: 'B', sales:   654_321 },
+                ]).slice(0, 6).map((s: any, i: number) => (
+                  <tr key={i} className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
+                    <td className="py-3 px-5 text-xs font-bold">{s.ville || s.city || 'N/A'}</td>
+                    <td className="py-3 px-5 text-xs">
+                      <span className="px-2 py-0.5 bg-black/5 dark:bg-white/5 rounded text-[10px] font-bold text-on-surface-variant tracking-wider">
+                        {s.type_magasin || s.type || '—'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-5 text-right font-mono text-xs font-medium">
+                      {fmt(s.sales ?? s.total_sales ?? 0)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
+        </BentoCard>
 
-          <div className="flex justify-between items-center">
-
-            <span
-              className="
-                px-3 py-1
-                rounded-full
-                bg-electricIndigo/10
-                text-electricIndigo
-                text-sm
-                font-semibold
-              "
-            >
-              5.3% Error
-            </span>
-
-            <p className="text-xs text-textSecondary">
-              RMSE: 8.2
-            </p>
-
-          </div>
-
-        </GlassCard>
-
-      </section>
-
-      {/* ================= GRAPHS SECTION ================= */}
-      {/* ================= GRAPHS SECTION FULL WIDTH ================= */}
-<section className="mt-10 flex flex-col gap-8">
-
-  {/* ================= REVENUE TREND ================= */}
-  <GlassCard
-    hoverGlow
-    className="p-6 flex flex-col gap-4 w-full min-h-[360px]"
-  >
-    <div className="flex items-center justify-between">
-      <h3 className="font-bold text-lg flex items-center gap-2">
-        <Activity className="text-indigo-400" size={18} />
-        Revenue Trend
-      </h3>
-
-      <span className="text-xs px-2 py-1 rounded-full bg-indigo-500/10 text-indigo-400 font-semibold">
-        Live
-      </span>
-    </div>
-
-    <ResponsiveContainer width="100%" height={280}>
-      <AreaChart data={safeTrend}>
-        <defs>
-          <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
-            <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-
-        <XAxis dataKey="date" />
-        <YAxis />
-        <Tooltip />
-
-        <Area
-          type="monotone"
-          dataKey="sales"
-          stroke="#6366f1"
-          fill="url(#colorSales)"
-          strokeWidth={2}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
-  </GlassCard>
-
-  {/* ================= CATEGORY ================= */}
-  <GlassCard
-    hoverGlow
-    className="p-6 flex flex-col gap-4 w-full min-h-[360px]"
-  >
-    <div className="flex items-center justify-between">
-      <h3 className="font-bold text-lg flex items-center gap-2">
-        <Package className="text-emerald-400" size={18} />
-        Category Performance
-      </h3>
-
-      <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold">
-        Top 5
-      </span>
-    </div>
-
-    <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={safeCategories}>
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Bar dataKey="value" fill="#10b981" radius={[8, 8, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
-  </GlassCard>
-
-  {/* ================= PROMOTION IMPACT ================= */}
-  <GlassCard
-    hoverGlow
-    className="p-6 flex flex-col gap-4 w-full min-h-[360px]"
-  >
-    <div className="flex items-center justify-between">
-      <h3 className="font-bold text-lg flex items-center gap-2">
-        <BadgePercent className="text-pink-400" size={18} />
-        Promotion Impact
-      </h3>
-
-      <span className="text-xs px-2 py-1 rounded-full bg-pink-500/10 text-pink-400 font-semibold">
-        Campaigns
-      </span>
-    </div>
-
-    <ResponsiveContainer width="100%" height={280}>
-      <LineChart data={safePromo}>
-        <XAxis dataKey="date" />
-        <YAxis />
-        <Tooltip />
-
-        <Line
-          type="monotone"
-          dataKey="impact"
-          stroke="#ef4444"
-          strokeWidth={3}
-          dot={{ r: 3 }}
-          activeDot={{ r: 6 }}
-        />
-      </LineChart>
-    </ResponsiveContainer>
-  </GlassCard>
-
-</section>
-
-
-      
-
+      </div>
     </div>
   );
 };

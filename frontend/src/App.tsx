@@ -90,7 +90,7 @@ const AppContent: React.FC = () => {
 
       {/* Responsive Content Shell */}
       <div className="lg:pl-72 transition-all duration-300">
-        <main className="pt-20 pb-28 lg:pb-12 px-16 lg:px-24 w-full">
+        <main className="pt-20 pb-24 lg:pb-10 px-4 sm:px-6 lg:px-8 w-full max-w-[1600px] mx-auto">
           {currentPage === 'dashboard' && <Dashboard filters={filters} />}
           {currentPage === 'forecasting' && <Predictions filters={filters} />}
           {currentPage === 'intelligence' && <Intelligence filters={filters} />}

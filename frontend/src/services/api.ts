@@ -202,7 +202,11 @@ class ApiClient {
       throw new Error(`Prediction API Error: ${response.statusText}`);
     }
 
-    return response.json();
+    const json = await response.json();
+    if (json && typeof json === 'object' && 'data' in json) {
+      return json.data as PredictResponse;
+    }
+    return json as PredictResponse;
   }
 }
 

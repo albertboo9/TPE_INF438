@@ -57,7 +57,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {icon}
         </span>
 
-        <span className="text-[16px] font-semibold uppercase tracking-wider">
+        <span className="text-xs font-semibold uppercase tracking-wider">
           {label}
         </span>
       </button>
