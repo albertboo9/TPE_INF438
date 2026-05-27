@@ -1,4 +1,10 @@
-import { GlobalStats, TemporalData, CategoryStat, StoreStat } from '../types';
+import { 
+  GlobalStats, TemporalData, CategoryStat, StoreStat,
+  PredictRequest, PredictResponse,
+  PredictV2Request, PredictV2Response,
+  PredictCategoryRequest, PredictCategoryResponse,
+  CalendarInfo, OilPriceInfo
+} from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -174,39 +180,48 @@ class ApiClient {
     return this.fetcher<any>(`/analytics/full-dashboard${this.buildQueryString(filters)}`);
   }
 
-  // --- PREDICTIVE ML ENDPOINT ---
-  async predictSales(data: {
-    magasin_vec: number;
-    saison_vec: number;
-    ventes_veille: number;
-    moyenne_ventes_7j: number;
-    est_weekend: number;
-    est_jour_ferie: number;
-    indicateur_promotion: number;
-    prix_petrole: number;
-  }): Promise<{ status: string; prediction_transactions: number; source?: string }> {
-    const token = localStorage.getItem('accessToken');
-    const headers = new Headers();
-    headers.set('Content-Type', 'application/json');
-    if (token) {
-      headers.set('Authorization', `Bearer ${token}`);
-    }
-
-    const response = await fetch(`${API_BASE_URL}/predict`, {
+  // --- PREDICTIVE ML ENDPOINT V1 (Ancien modèle - features numériques) ---
+  async predictSales(data: PredictRequest): Promise<PredictResponse> {
+    return this.fetcher<PredictResponse>('/predict/v1', {
       method: 'POST',
-      headers,
       body: JSON.stringify(data),
     });
+  }
 
-    if (!response.ok) {
-      throw new Error(`Prediction API Error: ${response.statusText}`);
-    }
+  // --- PREDICTIVE ML ENDPOINT V2 (Nouveau modèle J+45 - features métier) ---
+  async predictSalesV2(data: PredictV2Request): Promise<PredictV2Response> {
+    return this.fetcher<PredictV2Response>('/predict/v2', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 
-    const json = await response.json();
-    if (json && typeof json === 'object' && 'data' in json) {
-      return json.data as PredictResponse;
-    }
-    return json as PredictResponse;
+  // --- PREDICTIVE ML ENDPOINT - Prédiction par catégorie (Bottom-to-Up) ---
+  async predictCategory(data: PredictCategoryRequest): Promise<PredictCategoryResponse> {
+    return this.fetcher<PredictCategoryResponse>('/predict/category', {
+      method: 'POST',
+      body: JSON.stringify({
+        numero_magasin: data.numero_magasin,
+        famille: data.famille,
+        saison: data.saison,
+        indicateur_promotion: data.indicateur_promotion,
+        prix_petrole: data.prix_petrole,
+        produits_json: JSON.stringify(data.produits),
+      }),
+    });
+  }
+
+  // --- ENDPOINTS UTILITAIRES ---
+  async getCalendarInfo(): Promise<CalendarInfo> {
+    return this.fetcher<CalendarInfo>('/predict/calendar');
+  }
+
+  async getOilPrice(): Promise<OilPriceInfo> {
+    return this.fetcher<OilPriceInfo>('/predict/oil-price');
+  }
+
+  async getModelsInfo(): Promise<any> {
+    return this.fetcher<any>('/predict/models');
   }
 }
 

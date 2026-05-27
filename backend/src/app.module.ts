@@ -22,6 +22,7 @@ import { MockDatabricksRepository } from './infrastructure/adapters/persistence/
 import { MongoDbMockRepository } from './infrastructure/adapters/persistence/mongodb/MongoDbMockRepository';
 import { MongoConnectionService } from './infrastructure/adapters/persistence/mongodb/MongoConnectionService';
 import { JwtStrategy } from './infrastructure/adapters/security/JwtStrategy';
+import { OilPriceService } from './infrastructure/adapters/external/OilPriceService';
 import { CacheConfigModule } from './cache/cache.module';
 
 // Presentation - Controllers
@@ -133,6 +134,7 @@ const repositoryProvider: Provider = {
     // Infrastructure
     JwtStrategy,
     AuthService,
+    OilPriceService,
     // MongoDB connection service (also registered for DI)
     MongoConnectionService,
     MongoDbMockRepository,
