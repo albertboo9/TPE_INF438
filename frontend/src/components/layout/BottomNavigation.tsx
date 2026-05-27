@@ -8,78 +8,68 @@ interface BottomNavigationProps {
   userRole?: string;
 }
 
+const NAV_ITEMS = [
+  { page: 'dashboard', label: 'Tableau de Bord', icon: 'dashboard' },
+  { page: 'forecasting', label: 'Prévisionnel', icon: 'query_stats', badge: 'IA' },
+  { page: 'intelligence', label: 'Catalogue', icon: 'inventory_2' },
+];
+
 export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   currentPage,
   onNavigate,
   onOpenFilters,
-  userRole,
 }) => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-surface/80 dark:bg-[#181420]/80 backdrop-blur-xl border-t border-border dark:border-[#2b2735] px-6 py-3 lg:hidden flex justify-around items-center">
-      {/* Overview/Dashboard tab */}
-      <button
-        onClick={() => onNavigate('dashboard')}
-        className={cn(
-          "flex flex-col items-center gap-1 transition-all duration-300 active:scale-90",
-          currentPage === 'dashboard' ? 'text-primary' : 'text-on-surface-variant opacity-60'
-        )}
-      >
-        <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: currentPage === 'dashboard' ? "'FILL' 1" : "'FILL' 0" }}>
-          dashboard
-        </span>
-        <span className="text-[10px] font-semibold tracking-wider font-label-caps">Overview</span>
-      </button>
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-surface/80 dark:bg-[#181420]/80 backdrop-blur-xl border-t border-border dark:border-[#2b2735] px-4 py-2 lg:hidden flex justify-around items-center safe-area-bottom">
+      {NAV_ITEMS.map((item) => {
+        const active = currentPage === item.page;
+        return (
+          <button
+            key={item.page}
+            onClick={() => onNavigate(item.page)}
+            className={cn(
+              "flex flex-col items-center gap-0.5 transition-all duration-300 active:scale-90 relative py-1 px-3",
+              active ? 'text-brand-500' : 'text-on-surface-variant/50'
+            )}
+          >
+            {/* Active indicator dot */}
+            {active && (
+              <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-brand-500" />
+            )}
+            <span className="material-symbols-outlined text-[22px]" style={{
+              fontVariationSettings: active ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 300"
+            }}>
+              {item.icon}
+            </span>
+            <span className="text-[9px] font-bold tracking-wider uppercase">{item.label}</span>
+            {item.badge && active && (
+              <span className="absolute -top-0.5 right-1 text-[7px] font-bold px-1 py-0.5 rounded-full bg-brand-500/20 text-brand-600 dark:text-brand-400">
+                {item.badge}
+              </span>
+            )}
+          </button>
+        );
+      })}
 
-      {/* Forecasting/Simulations tab */}
-      <button
-        onClick={() => onNavigate('forecasting')}
-        className={cn(
-          "flex flex-col items-center gap-1 transition-all duration-300 active:scale-90",
-          currentPage === 'forecasting' ? 'text-primary' : 'text-on-surface-variant opacity-60'
-        )}
-      >
-        <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: currentPage === 'forecasting' ? "'FILL' 1" : "'FILL' 0" }}>
-          query_stats
-        </span>
-        <span className="text-[10px] font-semibold tracking-wider font-label-caps">Forecasting</span>
-      </button>
-
-      {/* Slide-up Filters Action button (floating and distinctive) */}
+      {/* Filter button */}
       <button
         onClick={onOpenFilters}
-        className="flex flex-col items-center justify-center -translate-y-4 w-12 h-12 bg-primary text-white rounded-full shadow-lg shadow-primary/30 transition-all duration-300 hover:shadow-primary/50 active:scale-90"
+        className="flex flex-col items-center justify-center -translate-y-3 w-11 h-11 bg-brand-500 text-white rounded-full shadow-lg shadow-brand-500/30 transition-all duration-300 hover:shadow-brand-500/50 active:scale-90"
       >
-        <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-          filter_list
+        <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+          tune
         </span>
       </button>
 
-      {/* SKU Catalog / Product Intelligence tab */}
+      {/* Logout */}
       <button
-        onClick={() => onNavigate('intelligence')}
-        className={cn(
-          "flex flex-col items-center gap-1 transition-all duration-300 active:scale-90",
-          currentPage === 'intelligence' ? 'text-primary' : 'text-on-surface-variant opacity-60'
-        )}
+        onClick={() => { localStorage.clear(); window.location.reload(); }}
+        className="flex flex-col items-center gap-0.5 text-on-surface-variant/40 transition-all duration-300 active:scale-90 py-1 px-3"
       >
-        <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: currentPage === 'intelligence' ? "'FILL' 1" : "'FILL' 0" }}>
-          inventory_2
-        </span>
-        <span className="text-[10px] font-semibold tracking-wider font-label-caps">Products</span>
-      </button>
-
-      {/* Help / Logout (minimal display) */}
-      <button
-        onClick={() => {
-          localStorage.clear();
-          window.location.reload();
-        }}
-        className="flex flex-col items-center gap-1 text-error opacity-60 transition-all duration-300 active:scale-90"
-      >
-        <span className="material-symbols-outlined text-[24px]">
+        <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 300" }}>
           logout
         </span>
-        <span className="text-[10px] font-semibold tracking-wider font-label-caps">Logout</span>
+        <span className="text-[9px] font-bold tracking-wider uppercase">Quitter</span>
       </button>
     </div>
   );
