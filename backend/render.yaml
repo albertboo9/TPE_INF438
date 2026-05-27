@@ -1,0 +1,35 @@
+# Render Blueprint — RetailSense Backend
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: retailsense-api
+    env: node
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && node dist/main.js
+    healthCheckPath: /predict/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: PRIMARY_DATA_SOURCE
+        value: mongodb
+      - key: FRONTEND_URL
+        value: https://tpe-inf-438.vercel.app
+      - key: ML_API_URL
+        value: https://kenfac-ventep.hf.space
+      - key: ML_API_URL_V2
+        value: https://Allawaipedemgue-Projet-Api1.hf.space
+      - key: JWT_SECRET
+        generateValue: true
+      - key: API_PREFIX
+        value: api/v1
+      - key: CACHE_TTL_GLOBAL
+        value: "900"
+      - key: CACHE_TTL_TEMPORAL
+        value: "600"
+      - key: CACHE_TTL_CATEGORIES
+        value: "900"
+      - key: CACHE_TTL_STORES
+        value: "900"
